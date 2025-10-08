@@ -1,0 +1,33 @@
+{
+  "name": "registration-backend",
+  "version": "1.0.0",
+  "description": "Backend for user registration using Node.js, Express, and MongoDB",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "build": "npx prisma generate",
+    "postinstall": "npx prisma generate",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^5.10.9",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^7.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4",
+    "prisma": "^6.3.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

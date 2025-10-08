@@ -1,0 +1,321 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MYSQL_URI")
+}
+
+enum ConferenceJoiningMode {
+  Online
+  InPerson
+}
+
+model registerUser {
+  id               Int      @id @default(autoincrement())
+  name             String
+  email            String   @unique
+  registrationType String
+  institutionName  String
+  country          String
+  phone            String
+  earlyBird        Boolean
+  regFee           String
+  paperId              String @unique
+  transactionId        String  @unique
+  uploadPaymentReceipt String
+  isPaid           Boolean  @default(false)
+  referralCode     String?
+  referredById     String?
+  referredBy       Admin?   @relation("UserReferrals", fields: [referredById], references: [id])
+  conferenceJoiningMode ConferenceJoiningMode
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model sponsor {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  level     String
+  amount    String
+  isPaid    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model speaker {
+  id              String       @id @default(uuid())
+  paperId   String    // <— new field for paper ID
+
+
+  subtitle        String?
+  authorBiography String?      @db.Text   // min 50, max 200 words validated in controller
+  institutionAddress String?
+  affiliation     String?
+  paperDocxUrl    String?      // Only DOCX
+  zipFolderUrl    String?      // Only Zip
+  
+  // Conference Information
+  conferenceTitle String
+  placeDate       String
+  
+  // Paper Information
+  paperTitle      String
+  paperAbstract   String       @db.Text
+  keywords        String       @db.Text
+  
+  // Primary Author Information
+  name            String
+  email           String       @unique
+  phone           String
+  institutionName String
+  country         String
+  orcidId         String?
+  isCorrespondingAuthor Boolean @default(true)
+  
+  // Co-authors Information (JSON array)
+  coAuthors       String?      @db.Text // JSON array of co-authors
+  
+  // Subject Areas
+  primarySubject  String
+  additionalSubjects String?   @db.Text // JSON array of additional subjects
+  
+  // File Uploads
+  paperFileUrl    String?
+  supplementaryFileUrl String?
+  sourceCodeFileUrl String?
+  turnitinReportUrl  String?  
+  
+  // Additional Declarations
+  ethicsCompliance Boolean     @default(false)
+  dataAvailability Boolean     @default(false)
+  preprintPolicy   Boolean     @default(false)
+  preprintUrl      String?
+  conflictOfInterest Boolean   @default(false)
+  
+  // Supplementary Questions
+  previouslySubmitted Boolean  @default(false)
+  previousSubmissionInfo String? @db.Text
+  willingToReview Boolean     @default(false)
+  aiGeneratedContent Boolean  @default(false)
+  aiContentDescription String? @db.Text
+  studentPaper Boolean        @default(false)
+  
+  // Agreements
+  agreeTerms      Boolean     @default(false)
+  agreePresentation Boolean   @default(false)
+  agreePublication Boolean    @default(false)
+  agreeReview     Boolean     @default(false)
+  agreeDataSharing Boolean    @default(false)
+  
+  // Additional Information
+  message         String?     @db.Text
+  referralCode    String?
+  referredById    String?
+  referredBy      Admin?      @relation("SpeakerReferrals", fields: [referredById], references: [id])
+  
+  // Review Status
+  reviewStatus    ReviewStatus @default(PENDING)
+  sentToCommittee Boolean      @default(false)
+  committeeMembers String?     @db.Text // JSON array of committee member IDs who received this speaker
+  
+  // Legacy fields for backward compatibility
+  attendeeType    AttendeeType @default(presenter)
+  fileUrl         String?
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  // Automated reminder tracking
+  reviewReminderCount       Int       @default(0)
+  reviewReminderLastSentAt  DateTime?
+}
+
+enum AttendeeType {
+  presenter
+  listener
+}
+
+enum ReviewStatus {
+  PENDING
+  SENT_TO_COMMITTEE
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+model keynoteSpeaker {
+  id                    String   @id @default(uuid())
+  // Personal Information
+  name                  String
+  email                 String   @unique
+  phone                 String
+  country               String
+  
+  // Professional Information  
+  designation           String
+  institutionName       String
+  department            String?
+  experienceYears       Int
+  expertiseArea         String
+  specialization        String
+  
+  // Academic Credentials
+  highestDegree         String
+  university            String?
+  publicationsCount     Int?
+  notableAchievements   String?
+  
+  // Speaking Experience
+  keynoteExperience     Int?
+  notableConferences    String?
+  
+  // Proposed Keynote Topic
+  keynoteTitle          String
+  keynoteAbstract       String   @db.Text
+  targetAudience        String?  @db.Text
+  
+  // Online Presence
+  linkedinProfile       String?
+  website               String?
+  orcidId               String?
+  googleScholar         String?
+  
+  // Files
+  cvFileUrl             String?
+  photoFileUrl          String?
+  presentationFileUrl   String?
+  
+  // Additional Information
+  preferredSessionTime  String?
+  accommodationNeeded   String?
+  dietaryRestrictions   String?
+  additionalComments    String?  @db.Text
+  
+  // Agreements
+  agreeToTerms          Boolean  @default(false)
+  agreeToMarketing      Boolean  @default(false)
+  
+  // Status and Admin Relations
+  status                KeynoteStatus @default(PENDING)
+  referralCode          String?
+  referredById          String?
+  referredBy            Admin?   @relation("KeynoteReferrals", fields: [referredById], references: [id])
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+enum KeynoteStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CONFIRMED
+}
+
+model Admin {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  role          AdminRole
+  referralCode  String?        @unique
+  referredUsers User[]         @relation("ReferredUsers")
+  referredRegistrations registerUser[] @relation("UserReferrals")
+  referredSpeakers speaker[]   @relation("SpeakerReferrals")
+  referredKeynotes keynoteSpeaker[] @relation("KeynoteReferrals")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  referredBy String?
+  admin      Admin?   @relation("ReferredUsers", fields: [adminId], references: [id])
+  adminId    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ReviewingCommittee {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  designation  String
+  institution  String
+  expertise    String
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdBy    String   // Super Admin ID who created this member
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Add enum
+enum ContactStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED_EMAIL
+  RESOLVED_PHONE
+  CLOSED
+}
+
+model Contact {
+  id              String         @id @default(uuid())
+  name            String
+  email           String
+  phone           String
+  subject         String
+  message         String         @db.Text
+  status          ContactStatus  @default(PENDING)
+  resolutionNotes String?        @db.Text
+  inProgressAt    DateTime?      // set when moved to IN_PROGRESS
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+
+enum ReviewerStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model ReviewerExpression {
+  id                           String          @id @default(uuid())
+  name                         String
+  currentJobTitle              String
+  institution                  String
+  email                        String
+  phone                        String
+
+  // Arrays stored as JSON
+  education                    Json
+  subjectArea                  Json
+  methodologicalExpertise      Json
+  researchInterest             Json
+
+  previousPeerReviewExperience String?       @db.Text
+  conflictOfInterest           String?       @db.Text
+
+  cvUrl                        String?
+  status                       ReviewerStatus  @default(PENDING)
+
+  createdAt                    DateTime        @default(now())
+  updatedAt                    DateTime        @updatedAt
+}
