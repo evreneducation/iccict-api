@@ -19,13 +19,13 @@ export const welcomeTemplate = (userData) => `
   <div class="container">
     <div class="header">
       <h1>🎉 Registration Confirmed!</h1>
-      <p>ICMMCS 2025 - International Conference on Mathematics, Management & Computer Science</p>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${userData.name},</h2>
       
-      <p>Welcome to ICMMCS 2025!</p>
+      <p>Welcome to ICCICT 2026!</p>
       </br>
       <p>We're thrilled to have you join our international conference.</p>
       
@@ -48,8 +48,8 @@ export const welcomeTemplate = (userData) => `
         <h3>📅 Conference Details</h3>
         <ul>
           <li><strong>Date:</strong> November 10, 2025</li>
-          <li><strong>Venue:</strong> Majan University College, Muscat, Oman</li>
-          <li><strong>Website:</strong> <a href="https://www.icmmcs.org">www.icmmcs.org</a></li>
+          <li><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</li>
+          <li><strong>Website:</strong> <a href="https://www.iccict.org">www.iccict.org</a></li>
         </ul>
       </div>
       
@@ -58,7 +58,7 @@ export const welcomeTemplate = (userData) => `
         <ul>
           <li>You will receive a payment confirmation email shortly</li>
           <li>Conference agenda and program details will be shared after payment confirmation</li>
-          <li>For accommodation and travel visit our <a href="https://www.icmmcs.org">website</a></li>
+          <li>For accommodation and travel visit our <a href="https://www.iccict.org">website</a></li>
           <li>Keep checking our website for updates</li>
         </ul>
       </div>
@@ -67,20 +67,20 @@ export const welcomeTemplate = (userData) => `
         <h3>📧 Stay Connected</h3>
         <p>For any questions or assistance, please contact us at:</p>
         <ul>
-          <li>Email: info@icmmcs.org</li>
+          <li>Email: info@iccict.org</li>
           <li>Phone: +91-9540111207 / +91-9540111307</li>
         </ul>
       </div>
       
-      <p>We look forward to your participation in advancing the fields of mathematics, management, and computer science!</p>
+      <p>We look forward to your participation in advancing the fields of AI, ML, IoT, and computer science!</p>
       
       <p>Best regards,<br>
       <strong>Organizing Committee</strong><br>
-      <strong>ICMMCS 2025</strong><br>
+      <strong>ICCICT 2026</strong><br>
 
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this email.</p>
-        <p>&copy; 2025 ICMMCS. All rights reserved.</p>
+        <p>&copy; 2025 ICCICT. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -94,7 +94,7 @@ export const paymentReceivedTemplate = (user) => `
 <html>
 <head>
   <meta charset="utf-8"/>
-  <title>Payment Received - ICMMCS 2025</title>
+  <title>Payment Received - ICCICT 2026</title>
   <style>
     body { font-family: Arial, sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
     .container { max-width: 680px; margin: 0 auto; padding: 24px; }
@@ -110,14 +110,14 @@ export const paymentReceivedTemplate = (user) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>Payment Received — ICMMCS 2025</h1>
+      <h1>Payment Received — ICCICT 2026</h1>
       <p>Thank you for your payment</p>
     </div>
 
     <div class="content">
       <p>Hi <strong>${user.name}</strong>,</p>
 
-      <p>We have successfully received your payment for the ICMMCS 2025 registration. Below are your details:</p>
+      <p>We have successfully received your payment for the ICCICT 2026 registration. Below are your details:</p>
 
       <div class="info">
         <div class="field"><span class="label">Name:</span> ${user.name}</div>
@@ -130,13 +130,13 @@ export const paymentReceivedTemplate = (user) => `
         ${user.uploadPaymentReceipt ? `<div class="field"><span class="label">Receipt:</span> <a href="${user.uploadPaymentReceipt}" target="_blank">View Receipt</a></div>` : ''}
       </div>
 
-      <p>If you have any questions, please contact <a href="mailto:info@icmmcs.org">info@icmmcs.org</a></p>
+      <p>If you have any questions, please contact <a href="mailto:info@iccict.org">info@iccict.org</a></p>
 
-      <p>Best regards,<br/><strong>ICMMCS 2025 Organizing Committee</strong></p>
+      <p>Best regards,<br/><strong>ICCICT 2026 Organizing Committee</strong></p>
 
       <div class="footer">
         <p>This is an automated message. Please do not reply to this email.</p>
-        <p>&copy; 2025 ICMMCS</p>
+        <p>&copy; 2025 ICCICT. All Rights Reserved</p>
       </div>
     </div>
   </div>
@@ -166,7 +166,7 @@ export const adminNotificationTemplate = (userData) => `
   <div class="container">
     <div class="header">
       <h1>📝 New Conference Registration</h1>
-      <p>ICMMCS 2025 Conference</p>
+      <p>ICCICT 2026 Conference</p>
     </div>
     
     <div class="content">
@@ -191,7 +191,7 @@ export const adminNotificationTemplate = (userData) => `
       
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
         <p><strong>⚡ Action Required:</strong> Please add this attendee to the conference database and send confirmation materials.</p>
-        <p style="color: #666; font-size: 14px;">Conference: ICMMCS 2025</p>
+        <p style="color: #666; font-size: 14px;">Conference: ICCICT 2026</p>
       </div>
     </div>
   </div>
@@ -220,13 +220,13 @@ export const speakerConfirmationTemplate = (speakerData) => `
   <div class="container">
     <div class="header">
       <h1>📄 Paper Submission Confirmed!</h1>
-      <p>ICMMCS 2025 - International Conference on Mathematics, Management & Computer Science</p>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${speakerData.name},</h2>
       
-      <p>Thank you for submitting your research paper to ICMMCS 2025! We're excited to review your contribution to our prestigious conference.</p>
+      <p>Thank you for submitting your research paper to ICCICT 2026! We're excited to review your contribution to our prestigious conference.</p>
       
       <div class="highlight">
         <h3>📋 Your Submission Details</h3>
@@ -263,26 +263,26 @@ export const speakerConfirmationTemplate = (speakerData) => `
         <h3>📧 Contact Information</h3>
         <p>For any questions about your submission, please contact us at:</p>
         <ul>
-          <li>Email: info@icmmcs.org</li>
+          <li>Email: info@iccict.org</li>
           <li>Phone: +968 93391308 / +91-9540111207</li>
         </ul>
       </div>
       
       <div class="info-section">
         <h3>📍 Conference Venue</h3>
-        <p><strong>Location:</strong> ${speakerData.placeDate || 'Majan University College, Muscat, Oman'}</p>
-        <p><strong>Website:</strong> <a href="https://www.icmmcs.org">www.icmmcs.org</a></p>
+        <p><strong>Location:</strong> ${speakerData.placeDate || 'India International Centre, Lodhi Estate, New Delhi, India'}</p>
+        <p><strong>Website:</strong> <a href="https://www.iccict.org">www.iccict.org</a></p>
       </div>
       
-      <p>We appreciate your contribution to the advancement of mathematics, management, and computer science research!</p>
+      <p>We appreciate your contribution to the advancement of AI, ML, IoT, and computer science research!</p>
       
       <p>Best regards,<br>
-      <strong>ICMMCS 2025 Review Committee</strong><br>
-      International Conference on Mathematics, Management & Computer Science</p>
+      <strong>ICCICT 2026 Review Committee</strong><br>
+      International Conference on AI, ML, IoT & Computer Science</p>
       
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this email.</p>
-        <p>&copy; 2025 ICMMCS. All rights reserved.</p>
+        <p>&copy; 2025 ICCICT. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -311,7 +311,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
   <div class="container">
     <div class="header">
       <h1>📄 New Presenter Registration</h1>
-      <p>ICMMCS 2025 Conference</p>
+      <p>ICCICT 2026 Conference</p>
     </div>
     
     <div class="content">
@@ -357,7 +357,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
         <div class="value">${speakerData.conferenceTitle}</div>
         
         <div class="label">Conference Details:</div>
-        <div class="value">${speakerData.placeDate || 'November 10-11, 2025 - Majan University College, Muscat, Oman'}</div>
+        <div class="value">${speakerData.placeDate || 'November 10-11, 2025 - India International Centre, Lodhi Estate, New Delhi, India'}</div>
         
         <div class="label">Submission File:</div>
         <div class="value">
@@ -385,7 +385,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
       
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
         <p><strong>⚡ Action Required:</strong> Please assign this paper to a reviewer and begin the evaluation process.</p>
-        <p style="color: #666; font-size: 14px;">Conference: ICMMCS 2025</p>
+        <p style="color: #666; font-size: 14px;">Conference: ICCICT 2026</p>
       </div>
     </div>
   </div>
@@ -414,13 +414,13 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
   <div class="container">
     <div class="header">
       <h1>🤝 Sponsorship Registration Confirmed!</h1>
-      <p>ICMMCS 2025 - International Conference on Mathematics, Management & Computer Science</p>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${sponsorData.name},</h2>
       
-      <p>Thank you for registering as a sponsor for ICMMCS 2025! We're thrilled to partner with you in making this conference a tremendous success.</p>
+      <p>Thank you for registering as a sponsor for ICCICT 2026! We're thrilled to partner with you in making this conference a tremendous success.</p>
       
       <div class="highlight">
         <h3>🏆 Your Sponsorship Details</h3>
@@ -458,9 +458,9 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
         <h3>📅 Conference Information</h3>
         <ul>
           <li><strong>Date:</strong> November 10-11, 2025</li>
-          <li><strong>Venue:</strong> Majan University College, Muscat, Oman</li>
+          <li><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</li>
           <li><strong>Expected Attendees:</strong> 500+ academics and industry professionals</li>
-          <li><strong>Website:</strong> <a href="https://www.icmmcs.org">www.icmmcs.org</a></li>
+          <li><strong>Website:</strong> <a href="https://www.iccict.org">www.iccict.org</a></li>
         </ul>
       </div>
       
@@ -468,8 +468,8 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
         <h3>📧 Partnership Contact</h3>
         <p>For sponsorship-related queries and coordination:</p>
         <ul>
-          <li>Email: partnerships@icmmcs.org</li>
-          <li>General: info@icmmcs.org</li>
+          <li>Email: partnerships@iccict.org</li>
+          <li>General: info@iccict.org</li>
           <li>Phone: +968 93391308 / +91-9540111207</li>
         </ul>
       </div>
@@ -477,12 +477,12 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
       <p>We're excited about this partnership and look forward to showcasing your organization to our global community of researchers and professionals!</p>
       
       <p>Best regards,<br>
-      <strong>ICMMCS 2025 Partnerships Team</strong><br>
-      International Conference on Mathematics, Management & Computer Science</p>
+      <strong>ICCICT 2026 Partnerships Team</strong><br>
+      International Conference on AI, ML, IoT & Computer Science</p>
       
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this email.</p>
-        <p>&copy; 2025 ICMMCS. All rights reserved.</p>
+        <p>&copy; 2025 ICCICT. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -512,7 +512,7 @@ export const sponsorAdminNotificationTemplate = (sponsorData) => `
   <div class="container">
     <div class="header">
       <h1>💰 New Sponsor Registration</h1>
-      <p>ICMMCS 2025 Conference Partnership</p>
+      <p>ICCICT 2026 Conference Partnership</p>
     </div>
     
     <div class="content">
@@ -562,9 +562,9 @@ export const sponsorAdminNotificationTemplate = (sponsorData) => `
       <div class="section">
         <h3>📊 Sponsorship Summary</h3>
         <div class="value">
-          <p><strong>Conference:</strong> ICMMCS 2025</p>
+          <p><strong>Conference:</strong> ICCICT 2026</p>
           <p><strong>Date:</strong> November 10-11, 2025</p>
-          <p><strong>Venue:</strong> Majan University College, Muscat, Oman</p>
+          <p><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</p>
           <p><strong>Status:</strong> Payment Pending</p>
         </div>
       </div>

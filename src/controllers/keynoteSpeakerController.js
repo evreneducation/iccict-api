@@ -12,14 +12,14 @@ const validatePhone = (phone) => {
   return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
 };
 
-const validateExpertiseArea = (area) => {
-  const validAreas = [
-    'Mathematics', 'Management', 'Computer Science', 'Data Science',
-    'Artificial Intelligence', 'Operations Research', 'Statistics',
-    'Information Systems', 'Business Analytics', 'Other'
-  ];
-  return validAreas.includes(area);
-};
+// const validateExpertiseArea = (area) => {
+//   const validAreas = [
+//     'Mathematics', 'Management', 'Computer Science', 'Data Science',
+//     'Artificial Intelligence', 'Operations Research', 'Statistics',
+//     'Information Systems', 'Business Analytics', 'Other'
+//   ];
+//   return validAreas.includes(area);
+// };
 
 export const registerKeynoteSpeaker = async (req, res) => {
   try {
@@ -92,12 +92,12 @@ export const registerKeynoteSpeaker = async (req, res) => {
     }
 
     // Validate expertise area
-    if (!validateExpertiseArea(speakerData.expertiseArea)) {
-      return res.status(400).json({
-        message: "Invalid expertise area selection",
-        success: false
-      });
-    }
+    // if (!validateExpertiseArea(speakerData.expertiseArea)) {
+    //   return res.status(400).json({
+    //     message: "Invalid expertise area selection",
+    //     success: false
+    //   });
+    // }
 
     // Validate abstract length
     if (speakerData.keynoteAbstract.length < 100) {

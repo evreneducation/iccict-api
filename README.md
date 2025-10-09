@@ -1,14 +1,14 @@
-# ICMMCS Backend — quick map
+# ICCICT Backend — quick map
 
 version: 1.1
 
 ## Structure (top folders)
 
-- ICMMCS-backend
+- ICCICT-backend
 
 ## package.json
 
-- path: `ICMMCS-backend/package.json`
+- path: `ICCICT-backend/package.json`
 - name: **registration-backend**
 - main: `src/app.js`
 - scripts:
@@ -36,63 +36,63 @@ version: 1.1
 
 ## Endpoints (sample)
 
-- `DELETE` /admins/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `DELETE` /keynote-speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `DELETE` /registrations/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `DELETE` /speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `DELETE` /sponsors/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /all _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /dashboard-stats _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /info _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /keynote-speakers _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /keynote-speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /keynote-speakers/admin/stats _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /referred-users _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /registrations _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /registrations/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /speakers _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /speakers/stats _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /sponsors _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /sponsors/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `PATCH` /keynote-speakers/:id/status _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `POST` /create _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `POST` /login _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `PUT` /keynote-speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `PUT` /registrations/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `PUT` /speakers/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `PUT` /sponsors/:id _(in ICMMCS-backend/src/routes/adminRoutes.js)_
-- `GET` /users _(in ICMMCS-backend/src/routes/conferenceRegistrationRoutes.js)_
-- `POST` /register _(in ICMMCS-backend/src/routes/conferenceRegistrationRoutes.js)_
-- `DELETE` /:id _(in ICMMCS-backend/src/routes/contact.js)_
-- `GET` / _(in ICMMCS-backend/src/routes/contact.js)_
-- `POST` / _(in ICMMCS-backend/src/routes/contact.js)_
-- `DELETE` /admin/:id _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `GET` / _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `GET` /:id _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `GET` /admin/all _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `GET` /admin/stats _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `PATCH` /admin/:id/status _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `POST` /register _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `PUT` /admin/:id _(in ICMMCS-backend/src/routes/keynoteSpeakerRoutes.js)_
-- `DELETE` /members/:id _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `GET` /active-members _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `GET` /members _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `GET` /stats _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `POST` /members _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `POST` /send-speaker/:speakerId _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `PUT` /members/:id _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `PUT` /speaker-status/:speakerId _(in ICMMCS-backend/src/routes/reviewingCommitteeRoutes.js)_
-- `DELETE` /speakers/:id _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `GET` /speakers _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `GET` /speakers/:id _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `GET` /stats _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `PATCH` /speakers/:id/status _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `POST` /register _(in ICMMCS-backend/src/routes/speakerRoutes.js)_
-- `GET` /sponsors _(in ICMMCS-backend/src/routes/sponsorRegistrationRoutes.js)_
-- `POST` /register _(in ICMMCS-backend/src/routes/sponsorRegistrationRoutes.js)_
-- `GET` / _(in ICMMCS-backend/src/routes/userRoutes.js)_
-- `POST` /register _(in ICMMCS-backend/src/routes/userRoutes.js)_
+- `DELETE` /admins/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `DELETE` /keynote-speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `DELETE` /registrations/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `DELETE` /speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `DELETE` /sponsors/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /all _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /dashboard-stats _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /info _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /keynote-speakers _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /keynote-speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /keynote-speakers/admin/stats _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /referred-users _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /registrations _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /registrations/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /speakers _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /speakers/stats _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /sponsors _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /sponsors/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `PATCH` /keynote-speakers/:id/status _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `POST` /create _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `POST` /login _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `PUT` /keynote-speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `PUT` /registrations/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `PUT` /speakers/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `PUT` /sponsors/:id _(in ICCICT-backend/src/routes/adminRoutes.js)_
+- `GET` /users _(in ICCICT-backend/src/routes/conferenceRegistrationRoutes.js)_
+- `POST` /register _(in ICCICT-backend/src/routes/conferenceRegistrationRoutes.js)_
+- `DELETE` /:id _(in ICCICT-backend/src/routes/contact.js)_
+- `GET` / _(in ICCICT-backend/src/routes/contact.js)_
+- `POST` / _(in ICCICT-backend/src/routes/contact.js)_
+- `DELETE` /admin/:id _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `GET` / _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `GET` /:id _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `GET` /admin/all _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `GET` /admin/stats _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `PATCH` /admin/:id/status _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `POST` /register _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `PUT` /admin/:id _(in ICCICT-backend/src/routes/keynoteSpeakerRoutes.js)_
+- `DELETE` /members/:id _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `GET` /active-members _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `GET` /members _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `GET` /stats _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `POST` /members _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `POST` /send-speaker/:speakerId _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `PUT` /members/:id _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `PUT` /speaker-status/:speakerId _(in ICCICT-backend/src/routes/reviewingCommitteeRoutes.js)_
+- `DELETE` /speakers/:id _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `GET` /speakers _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `GET` /speakers/:id _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `GET` /stats _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `PATCH` /speakers/:id/status _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `POST` /register _(in ICCICT-backend/src/routes/speakerRoutes.js)_
+- `GET` /sponsors _(in ICCICT-backend/src/routes/sponsorRegistrationRoutes.js)_
+- `POST` /register _(in ICCICT-backend/src/routes/sponsorRegistrationRoutes.js)_
+- `GET` / _(in ICCICT-backend/src/routes/userRoutes.js)_
+- `POST` /register _(in ICCICT-backend/src/routes/userRoutes.js)_
 
 ## Env vars referenced
 

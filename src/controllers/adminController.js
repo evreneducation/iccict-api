@@ -338,9 +338,9 @@ export const updateRegistration = async (req, res) => {
       const mailHtml = paymentReceivedTemplate(registration);
       
       const mailOptions = {
-        from: `"ICMMCS 2025" <${process.env.EMAIL_USER}>`,
+        from: `"ICCICT 2026" <${process.env.EMAIL_USER}>`,
         to: registration.email,
-        subject: 'Payment Received — ICMMCS 2025',
+        subject: 'Payment Received — ICCICT 2026',
         html: mailHtml,
       };
       

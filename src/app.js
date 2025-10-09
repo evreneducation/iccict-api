@@ -24,19 +24,6 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  // origin: [
-  //   "https://adityakkpk.github.io",
-  //   "http://localhost:3000",
-  //   "http://127.0.0.1:5500",
-  //   "http://localhost:5500",
-  //   "https://www.icmmcs.org",
-  //   "https://icmmcs.org",
-  //   "http://127.0.0.1:3000",
-  //   "http://icmmcs.org",
-  //   "http://www.icmmcs.org",
-  //   "https://private.compareunlistedshares.com/icmmcs-backend",
-  //   "https://icmmcs-backend.onrender.com/"
-  // ],
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],

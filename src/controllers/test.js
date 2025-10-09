@@ -4,7 +4,7 @@ async function hashPass(pass) {
     return await bcrypt.hash(pass, 10);
 }
 async function printPass(){
-    const hashedPass = await hashPass("icmmcs_super#@#");
+    const hashedPass = await hashPass("iccict_super#@#");
     console.log(hashedPass);
 }
 

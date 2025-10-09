@@ -52,9 +52,9 @@ router.post('/', async (req, res) => {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
-            subject: 'Thank you for contacting us - ICMMCS 2025',
+            subject: 'Thank you for contacting us - ICCICT 2026',
             html: `
-                <h2>Thank you for contacting ICMMCS 2025</h2>
+                <h2>Thank you for contacting ICCICT 2026</h2>
                 <p>Dear ${name},</p>
                 <p>We have received your message and will get back to you as soon as possible.</p>
                 <p>Here's a copy of your message:</p>
@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
                 <p>${message}</p>
                 <br>
                 <p>Best regards,</p>
-                <p>ICMMCS 2025 Team</p>
+                <p>ICCICT 2026 Team</p>
             `
         });
 

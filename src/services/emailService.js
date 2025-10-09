@@ -44,7 +44,7 @@ export async function sendUserRegisterEmail(userRegisterData) {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: userRegisterData.email,
-    subject: "ICMMCS 2025 | Conference Registration",
+    subject: "ICCICT 2026 | Conference Registration",
     html: welcomeTemplate(userRegisterData),
   };
 
@@ -81,7 +81,7 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
   const speakerMailOptions = {
     from: process.env.EMAIL_USER,
     to: speakerData.email,
-    subject: "ICMMCS 2025 | Presenter Registration Confirmation",
+    subject: "ICCICT 2026 | Presenter Registration Confirmation",
     html: speakerConfirmationTemplate(speakerData),
   };
 
@@ -119,7 +119,7 @@ export async function sendSponsorRegistrationEmail(sponsorData) {
   const sponsorMailOptions = {
     from: process.env.EMAIL_USER,
     to: sponsorData.email,
-    subject: "ICMMCS 2025 | Sponsorship Registration Confirmation",
+    subject: "ICCICT 2026 | Sponsorship Registration Confirmation",
     html: sponsorConfirmationTemplate(sponsorData),
   };
 
@@ -157,7 +157,7 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
   const keynoteSpeakerMailOptions = {
     from: process.env.EMAIL_USER,
     to: keynoteSpeakerData.email,
-    subject: "ICMMCS 2025 | Keynote Speaker Registration Confirmation",
+    subject: "ICCICT 2026 | Keynote Speaker Registration Confirmation",
     html: keynoteSpeakerConfirmationTemplate(keynoteSpeakerData),
   };
 
@@ -193,7 +193,7 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
 //   const committeeMailOptions = {
 //     from: process.env.EMAIL_USER,
 //     to: committeeMember.email,
-//     subject: `ICMMCS 2025 | Presenter Review Request: ${speakerData.name}`,
+//     subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
 //     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
 //   };
 
@@ -235,7 +235,7 @@ export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) 
   const committeeMailOptions = {
     from: process.env.EMAIL_USER,
     to: committeeMember.email,
-    subject: `ICMMCS 2025 | Presenter Review Request: ${speakerData.name}`,
+    subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
     attachments // <— include both
   };
@@ -263,7 +263,7 @@ export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) 
 
 //   const decisionMailto = (decision) => {
 //     const subject = encodeURIComponent(
-//       `[ICMMCS Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
+//       `[ICCICT Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
 //     );
 //     const body = encodeURIComponent(
 //       `Decision: ${decision}\n` +
@@ -271,7 +271,7 @@ export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) 
 //       `Title: ${speakerData.paperTitle || ""}\n` +
 //       `Author: ${speakerData.name || ""} <${speakerData.email || ""}>\n` +
 //       `Comments: (optional)\n\n` +
-//       `— Sent automatically by ICMMCS system`
+//       `— Sent automatically by ICCICT system`
 //     );
 //     return `mailto:${process.env.ADMIN_EMAIL}?subject=${subject}&body=${body}`;
 //   };
@@ -339,20 +339,20 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
 
   const decisionMailto = (decision) => {
     const subject = encodeURIComponent(
-      `[ICMMCS Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
+      `[ICCICT Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
     );
     const body = encodeURIComponent(
       `Decision: ${decision}\n` +
         `Paper ID: ${speakerData.paperId || ""}\n` +
         `Title: ${speakerData.paperTitle || ""}\n` +
         `Author: ${speakerData.name || ""} <${speakerData.email || ""}>\n` +
-        `Comments:\n\n— Sent automatically by ICMMCS system`
+        `Comments:\n\n— Sent automatically by ICCICT system`
     );
     return `mailto:${process.env.ADMIN_EMAIL}?subject=${subject}&body=${body}`;
   };
 
   // Optional: configurable review portal URL; falls back to a sensible default
-  const baseReviewUrl = process.env.REVIEW_PORTAL_URL || "https://www.icmmcs.org/paper-review.html";
+  const baseReviewUrl = process.env.REVIEW_PORTAL_URL || "https://www.ICCICT.org/paper-review.html";
   const reviewUrl = `${baseReviewUrl}?id=${encodeURIComponent(speakerData.id || "")}`;
 
   // convenience labels
@@ -365,7 +365,7 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
   const paperId = esc(speakerData.paperId || speakerData.id || "");
   const paperTitle = esc(speakerData.paperTitle || "Untitled Submission");
   const createdOn = speakerData.createdAt ? new Date(speakerData.createdAt).toLocaleDateString() : "";
-  const adminEmail = esc(process.env.ADMIN_EMAIL || "info@icmmcs.org");
+  const adminEmail = esc(process.env.ADMIN_EMAIL || "info@ICCICT.org");
 
   // --- subject + preheader
   const subject =
@@ -389,7 +389,7 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
           <td style="padding:28px 24px;background:linear-gradient(135deg,#019087,#40c4ba);color:#ffffff;">
             <h1 style="margin:0;font-size:22px;line-height:1.3;">Gentle Reminder — Review Required</h1>
             <p style="margin:6px 0 0 0;font-size:14px;opacity:.95;">
-              ICMMCS 2025 • International Conference on Mathematics, Management & Computer Science
+              ICCICT 2026 • International Conference on AI, ML, IoT & Computer Science
             </p>
           </td>
         </tr>
@@ -496,8 +496,8 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;background:#ffffff;border-radius:8px;">
               <tr>
                 <td align="center" style="padding:18px 16px;color:#666;font-size:12px;line-height:1.6;">
-                  <strong>Thank you for contributing to the ICMMCS 2025 review process.</strong><br/>
-                  This is an automated message from the ICMMCS Conference Management System.<br/>
+                  <strong>Thank you for contributing to the ICCICT 2026 review process.</strong><br/>
+                  This is an automated message from the ICCICT Conference Management System.<br/>
                   Need help? Email <a href="mailto:${adminEmail}" style="color:#019087;text-decoration:none;">${adminEmail}</a>
                 </td>
               </tr>
@@ -512,7 +512,7 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
 
   // --- Plain-text fallback
   const text =
-    `Gentle Reminder — Review Required (ICMMCS 2025)\n\n` +
+    `Gentle Reminder — Review Required (ICCICT 2026)\n\n` +
     `Paper ID: ${paperId}\n` +
     `Title: ${speakerData.paperTitle || "Untitled Submission"}\n` +
     `Author: ${speakerData.name || ""} ${speakerData.email ? `<${speakerData.email}>` : ""}\n` +
@@ -573,13 +573,13 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
   <div class="container">
     <div class="header">
       <h1>Keynote Speaker Registration Confirmed!</h1>
-      <p>ICMMCS 2025 - International Conference on Mathematics, Management & Computer Science</p>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${keynoteSpeakerData.name},</h2>
       
-      <p>Thank you for your interest in being a keynote speaker at ICMMCS 2025! We have successfully received your registration and proposal.</p>
+      <p>Thank you for your interest in being a keynote speaker at ICCICT 2026! We have successfully received your registration and proposal.</p>
       
       <div class="highlight">
         <h3>📋 Your Registration Details</h3>
@@ -603,7 +603,7 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
         <h3>📧 Stay Connected</h3>
         <p>For any questions or updates regarding your keynote speaker application, please contact us at:</p>
         <ul>
-          <li>Email: info@icmmcs.org</li>
+          <li>Email: info@ICCICT.org</li>
           <li>Phone: +968 93391308 / +91-9540111207</li>
         </ul>
       </div>
@@ -611,21 +611,21 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
       <div class="info-section">
         <h3>📅 Conference Details</h3>
         <p><strong>Date:</strong> November 10th, 2025</p>
-        <p><strong>Venue:</strong> Majan University College, Muscat, Oman</p>
-        <p><strong>Website:</strong> <a href="https://www.icmmcs.org">www.icmmcs.org</a></p>
+        <p><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</p>
+        <p><strong>Website:</strong> <a href="https://www.ICCICT.org">www.ICCICT.org</a></p>
       </div>
       
-      <p>We appreciate your willingness to share your expertise with our global community of researchers and professionals. Your contribution will help advance the fields of mathematics, management, and computer science.</p>
+      <p>We appreciate your willingness to share your expertise with our global community of researchers and professionals. Your contribution will help advance the fields of AI, ML, IoT, and computer science.</p>
       
-      <p>Thank you for your interest in ICMMCS 2025!</p>
+      <p>Thank you for your interest in ICCICT 2026!</p>
       
       <p>Best regards,<br>
-      <strong>ICMMCS 2025 Organizing Committee</strong><br>
-      International Conference on Mathematics, Management & Computer Science</p>
+      <strong>ICCICT 2026 Organizing Committee</strong><br>
+      International Conference on AI, ML, IoT & Computer Science</p>
       
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this email.</p>
-        <p>&copy; 2025 ICMMCS. All rights reserved.</p>
+        <p>&copy; 2025 ICCICT. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -657,13 +657,13 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
   <div class="container">
     <div class="header">
       <h1>📋 Presenter Review Request</h1>
-      <p>ICMMCS 2025 - International Conference on Mathematics, Management & Computer Science</p>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${committeeMember.name},</h2>
       
-      <p>You have been assigned to review a presenter application for ICMMCS 2025. Please find the complete presenter details below for your evaluation.</p>
+      <p>You have been assigned to review a presenter application for ICCICT 2026. Please find the complete presenter details below for your evaluation.</p>
       
       <div class="priority">⏰ Review Priority: Standard Review Timeline</div>
       
@@ -770,7 +770,7 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
         <ul style="margin: 15px 0; padding-left: 20px;">
           <li><strong>Content Quality:</strong> Evaluate the relevance and quality of the proposed paper/presentation</li>
           <li><strong>Academic Merit:</strong> Assess the academic contribution and research methodology</li>
-          <li><strong>Conference Alignment:</strong> Ensure the topic aligns with ICMMCS 2025 themes</li>
+          <li><strong>Conference Alignment:</strong> Ensure the topic aligns with ICCICT 2026 themes</li>
           <li><strong>Presentation Readiness:</strong> Consider the speaker's ability to present effectively</li>
           <li><strong>Innovation Factor:</strong> Look for novel approaches or significant findings</li>
         </ul>
@@ -782,7 +782,7 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
           <p style="margin-bottom: 20px;">Please review the presenter application and provide your recommendation:</p>
           
           <div style="margin-bottom: 20px;">
-            <a href="https://www.icmmcs.org/paper-review.html?id=${speakerData.id}" class="cta-button" style="background: #019087; margin-bottom: 10px;">
+            <a href="https://www.ICCICT.org/paper-review.html?id=${speakerData.id}" class="cta-button" style="background: #019087; margin-bottom: 10px;">
               📋 View Full Paper Details
             </a>
             <p style="font-size: 12px; color: #666; margin-top: 5px;">
@@ -811,19 +811,19 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
         <h3>📞 Contact Information</h3>
         <p>If you have any questions about this review or need additional information, please contact:</p>
         <ul>
-          <li><strong>Conference Email:</strong> info@icmmcs.org</li>
+          <li><strong>Conference Email:</strong> info@ICCICT.org</li>
           <li><strong>Phone:</strong> +968 93391308 / +91-9540111207</li>
           <li><strong>Review Deadline:</strong> Please provide your feedback within 72 hour</li>
         </ul>
       </div>
       
       <div class="footer">
-        <p><strong>Thank you for your valuable contribution to the ICMMCS 2025 review process!</strong></p>
+        <p><strong>Thank you for your valuable contribution to the ICCICT 2026 review process!</strong></p>
         <p style="color: #666; font-size: 12px; margin-top: 15px;">
-          This is an automated email from the ICMMCS 2025 Conference Management System.<br>
+          This is an automated email from the ICCICT 2026 Conference Management System.<br>
           Your expertise and time are greatly appreciated in maintaining the quality of our conference.
         </p>
-        <p style="margin-top: 10px;">&copy; 2025 ICMMCS. All rights reserved.</p>
+        <p style="margin-top: 10px;">&copy; 2025 ICCICT. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -853,7 +853,7 @@ const keynoteSpeakerAdminNotificationTemplate = (keynoteSpeakerData) => `
   <div class="container">
     <div class="header">
       <h1>🎤 New Keynote Speaker Registration</h1>
-      <p>ICMMCS 2025 Conference</p>
+      <p>ICCICT 2026 Conference</p>
     </div>
     
     <div class="content">
