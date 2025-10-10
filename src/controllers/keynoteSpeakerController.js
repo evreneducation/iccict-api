@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js";
-// import { sendKeynoteSpeakerRegistrationEmail } from "../services/emailService.js";
+import { sendKeynoteSpeakerRegistrationEmail } from "../services/emailService.js";
 
 // Validation functions
 const validateEmail = (email) => {
