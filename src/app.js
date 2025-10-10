@@ -22,14 +22,32 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+app.use((req, res, next) => {
+  // Set timeout to 30 seconds for all requests
+  req.setTimeout(30000);
+  res.setTimeout(30000);
+  next();
+});
+
+// Enhanced CORS configuration
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
   credentials: true,
-  optionsSuccessStatus: 200 // For legacy browser support
+  optionsSuccessStatus: 200,
+  preflightContinue: false, // Don't continue to next middleware for preflight
+  maxAge: 86400 // Cache preflight for 24 hours
 }));
+
+// Explicit OPTIONS handler for faster preflight responses
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
+  res.header('Access-Control-Max-Age', '86400');
+  res.sendStatus(200);
+});
 
 
 app.use(express.json());

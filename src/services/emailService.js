@@ -1,4 +1,4 @@
-import { transporter } from "../config/email.js";
+import { sendEmail } from "../config/email.js";
 import {
   welcomeTemplate,
   adminNotificationTemplate,
@@ -18,11 +18,11 @@ export async function sendMailSafe(options) {
   }
 
   try {
-    const info = await transporter.sendMail(options);
+    const info = await sendEmail(options);
     return info;
   } catch (err) {
     if (shouldCooldownFor(err)) {
-      // Enter cooldown so we stop hammering Gmail until quota resets
+      // Enter cooldown so we stop hammering Brevo until quota resets
       tripMailerCooldown();
     }
     throw err;
@@ -42,14 +42,16 @@ function validateUserData(userData) {
 
 export async function sendUserRegisterEmail(userRegisterData) {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: userRegisterData.email,
     subject: "ICCICT 2026 | Conference Registration",
     html: welcomeTemplate(userRegisterData),
   };
 
   const confirmationMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
     subject: `Conference Registration`,
     html: adminNotificationTemplate(userRegisterData),
@@ -57,8 +59,8 @@ export async function sendUserRegisterEmail(userRegisterData) {
 
   try {
     await Promise.all([
-      transporter.sendMail(mailOptions),
-      transporter.sendMail(confirmationMailOptions),
+      sendEmail(mailOptions),
+      sendEmail(confirmationMailOptions),
     ]);
 
     console.log(
@@ -79,14 +81,16 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
   validateUserData(speakerData);
 
   const speakerMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: speakerData.email,
     subject: "ICCICT 2026 | Presenter Registration Confirmation",
     html: speakerConfirmationTemplate(speakerData),
   };
 
   const adminMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
     subject: `New Presenter Registration: ${speakerData.name}`,
     html: speakerAdminNotificationTemplate(speakerData),
@@ -94,8 +98,8 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
 
   try {
     await Promise.all([
-      transporter.sendMail(speakerMailOptions),
-      transporter.sendMail(adminMailOptions),
+      sendEmail(speakerMailOptions),
+      sendEmail(adminMailOptions),
     ]);
 
     console.log(
@@ -117,14 +121,16 @@ export async function sendSponsorRegistrationEmail(sponsorData) {
   validateUserData(sponsorData);
 
   const sponsorMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: sponsorData.email,
     subject: "ICCICT 2026 | Sponsorship Registration Confirmation",
     html: sponsorConfirmationTemplate(sponsorData),
   };
 
   const adminMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
     subject: `New Sponsor Registration: ${sponsorData.name}`,
     html: sponsorAdminNotificationTemplate(sponsorData),
@@ -132,8 +138,8 @@ export async function sendSponsorRegistrationEmail(sponsorData) {
 
   try {
     await Promise.all([
-      transporter.sendMail(sponsorMailOptions),
-      transporter.sendMail(adminMailOptions),
+      sendEmail(sponsorMailOptions),
+      sendEmail(adminMailOptions),
     ]);
 
     console.log(
@@ -155,14 +161,16 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
   validateUserData(keynoteSpeakerData);
 
   const keynoteSpeakerMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: keynoteSpeakerData.email,
     subject: "ICCICT 2026 | Keynote Speaker Registration Confirmation",
     html: keynoteSpeakerConfirmationTemplate(keynoteSpeakerData),
   };
 
   const adminMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
     subject: `New Keynote Speaker Registration: ${keynoteSpeakerData.name}`,
     html: keynoteSpeakerAdminNotificationTemplate(keynoteSpeakerData),
@@ -170,8 +178,8 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
 
   try {
     await Promise.all([
-      transporter.sendMail(keynoteSpeakerMailOptions),
-      transporter.sendMail(adminMailOptions),
+      sendEmail(keynoteSpeakerMailOptions),
+      sendEmail(adminMailOptions),
     ]);
 
     console.log(
@@ -189,140 +197,67 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
   }
 }
 
-// export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) {
-//   const committeeMailOptions = {
-//     from: process.env.EMAIL_USER,
-//     to: committeeMember.email,
-//     subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
-//     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
-//   };
-
-//   try {
-//     await transporter.sendMail(committeeMailOptions);
-//     console.log(
-//       `Speaker review email sent successfully to committee member ${committeeMember.email}`
-//     );
-//     return true;
-//   } catch (error) {
-//     console.error("Committee email service error:", {
-//       error: error.message,
-//       committeeMember: committeeMember.email,
-//       speaker: speakerData.email,
-//       timestamp: new Date().toISOString(),
-//     });
-//     throw error; // Re-throw to handle in controller
-//   }
-// }
-
-
 export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) {
   const attachments = [];
   // Prefer the newer paperFileUrl if set; fallback to legacy fileUrl
   const paperUrl = speakerData.paperFileUrl || speakerData.fileUrl;
   if (paperUrl) {
+    // Note: For Brevo API, you'll need to convert file to base64
+    // This is a simplified version - you may need to implement file reading
     attachments.push({
       filename: `${(speakerData.paperId || 'Paper')}.pdf`,
-      path: paperUrl
+      content: paperUrl, // You'll need to read and encode the file
+      contentType: 'application/pdf'
     });
   }
   if (speakerData.turnitinReportUrl) {
     attachments.push({
       filename: `${(speakerData.paperId || 'Paper')}_Turnitin_Report.pdf`,
-      path: speakerData.turnitinReportUrl
+      content: speakerData.turnitinReportUrl, // You'll need to read and encode the file
+      contentType: 'application/pdf'
     });
   }
 
   const committeeMailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: committeeMember.email,
     subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
-    attachments // <— include both
+    attachments
   };
 
   try {
-    await transporter.sendMail(committeeMailOptions);
+    await sendEmail(committeeMailOptions);
     console.log(`Speaker review email sent successfully to ${committeeMember.email}`);
     return true;
   } catch (error) {
-    console.error("Committee email service error:", { error: error.message, committeeMember: committeeMember.email, speaker: speakerData.email, timestamp: new Date().toISOString() });
+    console.error("Committee email service error:", { 
+      error: error.message, 
+      committeeMember: committeeMember.email, 
+      speaker: speakerData.email, 
+      timestamp: new Date().toISOString() 
+    });
     throw error;
   }
 }
-
-
-// export async function sendReviewReminderEmail(speakerData, committeeMember) {
-//   const attachments = [];
-//   const paperUrl = speakerData.paperFileUrl || speakerData.fileUrl;
-//   if (paperUrl) {
-//     attachments.push({ filename: `${(speakerData.paperId || "Paper")}.pdf`, path: paperUrl });
-//   }
-//   if (speakerData.turnitinReportUrl) {
-//     attachments.push({ filename: `${(speakerData.paperId || "Paper")}_Turnitin_Report.pdf`, path: speakerData.turnitinReportUrl });
-//   }
-
-//   const decisionMailto = (decision) => {
-//     const subject = encodeURIComponent(
-//       `[ICCICT Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
-//     );
-//     const body = encodeURIComponent(
-//       `Decision: ${decision}\n` +
-//       `Paper ID: ${speakerData.paperId || ""}\n` +
-//       `Title: ${speakerData.paperTitle || ""}\n` +
-//       `Author: ${speakerData.name || ""} <${speakerData.email || ""}>\n` +
-//       `Comments: (optional)\n\n` +
-//       `— Sent automatically by ICCICT system`
-//     );
-//     return `mailto:${process.env.ADMIN_EMAIL}?subject=${subject}&body=${body}`;
-//   };
-
-//   const html = `
-//     <div style="font-family: Arial, sans-serif; line-height:1.6; color:#333;">
-//       <h2 style="margin-bottom:4px;">Gentle reminder to review</h2>
-//       <p style="margin-top:0;">Dear ${committeeMember.name || "Reviewer"},</p>
-//       <p>
-//         Please review <strong>${speakerData.paperId || ""}</strong>
-//         ${speakerData.paperTitle ? ` — <em>${speakerData.paperTitle}</em>` : ""}.
-//         Click a quick action to email your decision to the admin:
-//       </p>
-//       <p style="margin:18px 0;">
-//         <a href="${decisionMailto("APPROVED")}" style="padding:10px 14px; text-decoration:none; border-radius:6px; background:#22c55e; color:#fff; margin-right:8px;">Approve</a>
-//         <a href="${decisionMailto("REJECTED")}" style="padding:10px 14px; text-decoration:none; border-radius:6px; background:#ef4444; color:#fff; margin-right:8px;">Reject</a>
-//         <a href="${decisionMailto("NEEDS_REVISION")}" style="padding:10px 14px; text-decoration:none; border-radius:6px; background:#f59e0b; color:#fff;">Need Revision</a>
-//       </p>
-//       <p style="font-size:13px; color:#555;">
-//         If buttons don’t work, reply with: <strong>APPROVED</strong>, <strong>REJECTED</strong>, or <strong>NEEDS_REVISION</strong>.
-//         You can also email <a href="mailto:${process.env.ADMIN_EMAIL}">${process.env.ADMIN_EMAIL}</a> directly.
-//       </p>
-//       <hr/>
-//       <p style="font-size:12px; color:#888;">Paper attachments are included for your convenience.</p>
-//     </div>`;
-
-//   await transporter.sendMail({
-//     from: process.env.EMAIL_USER,
-//     to: committeeMember.email,
-//     subject: `Reminder: Review pending — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim(),
-//     html,
-//     attachments
-//   });
-
-//   return true;
-// }
-
-
-
 
 export async function sendReviewReminderEmail(speakerData, committeeMember) {
   // --- attachments (same behavior as before)
   const attachments = [];
   const paperUrl = speakerData.paperFileUrl || speakerData.fileUrl;
   if (paperUrl) {
-    attachments.push({ filename: `${(speakerData.paperId || "Paper")}.pdf`, path: paperUrl });
+    attachments.push({ 
+      filename: `${(speakerData.paperId || "Paper")}.pdf`, 
+      content: paperUrl, // You'll need to read and encode the file
+      contentType: 'application/pdf'
+    });
   }
   if (speakerData.turnitinReportUrl) {
     attachments.push({
       filename: `${(speakerData.paperId || "Paper")}_Turnitin_Report.pdf`,
-      path: speakerData.turnitinReportUrl,
+      content: speakerData.turnitinReportUrl, // You'll need to read and encode the file
+      contentType: 'application/pdf'
     });
   }
 
@@ -481,7 +416,7 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
                   </div>
 
                   <p style="margin:10px 0 0 0;font-size:12px;color:#666;">
-                    If the buttons don’t work, reply to <a href="mailto:${adminEmail}" style="color:#019087;text-decoration:none;">${adminEmail}</a>
+                    If the buttons don't work, reply to <a href="mailto:${adminEmail}" style="color:#019087;text-decoration:none;">${adminEmail}</a>
                     with one of: <strong>APPROVED</strong>, <strong>NEEDS&nbsp;REVISION</strong>, or <strong>REJECTED</strong>.
                   </p>
                 </td>
@@ -524,32 +459,20 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
     `Approve: ${decisionMailto("APPROVED")}\n` +
     `Needs Revision: ${decisionMailto("NEEDS_REVISION")}\n` +
     `Reject: ${decisionMailto("REJECTED")}\n` +
-    `\nIf links don’t work, email ${process.env.ADMIN_EMAIL} with one of: APPROVED / NEEDS REVISION / REJECTED.\n`;
+    `\nIf links don't work, email ${process.env.ADMIN_EMAIL} with one of: APPROVED / NEEDS REVISION / REJECTED.\n`;
 
   await sendMailSafe({
-    from: process.env.EMAIL_USER,
+    from: process.env.BREVO_FROM_EMAIL,
+    fromName: "ICCICT 2026",
     to: committeeMember.email,
     subject,
     html,
     text,
     attachments,
   });
-  // await transporter.sendMail({
-  //   from: process.env.EMAIL_USER,
-  //   to: committeeMember.email,
-  //   subject,
-  //   html,
-  //   text,
-  //   attachments,
-  // });
 
   return true;
 }
-
-
-
-
-
 
 // Email template for keynote speaker confirmation
 const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `

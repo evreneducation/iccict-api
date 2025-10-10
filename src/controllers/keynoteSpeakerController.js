@@ -220,14 +220,6 @@ export const registerKeynoteSpeaker = async (req, res) => {
       data: keynoteData,
     });
 
-    // Send registration confirmation emails
-    try {
-      await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker);
-    } catch (emailError) {
-      console.error('Email service error:', emailError);
-      // Don't fail the registration if email fails
-    }
-
     res.status(201).json({
       message: "Keynote speaker registration successful! We will review your proposal and get back to you within 10 business days.",
       keynoteSpeaker: {
@@ -239,6 +231,14 @@ export const registerKeynoteSpeaker = async (req, res) => {
       },
       success: true,
     });
+
+    // Send registration confirmation emails
+    try {
+      await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker);
+    } catch (emailError) {
+      console.error('Email service error:', emailError);
+      // Don't fail the registration if email fails
+    }
 
   } catch (error) {
     console.error('Keynote speaker registration error:', error);

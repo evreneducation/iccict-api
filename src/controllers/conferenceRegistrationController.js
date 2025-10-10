@@ -169,15 +169,15 @@ export const registerUser = async (req, res) => {
       },
     });
 
-    await sendUserRegisterEmail({
-      ...registerUserData,
-      uploadPaymentReceipt: receiptUrl,
-    });
-
-    return res.status(201).json({
+    res.status(201).json({
       message: "User registered successfully",
       user: newRegisterUser,
       success: true,
+    });
+
+    sendUserRegisterEmail({
+      ...registerUserData,
+      uploadPaymentReceipt: receiptUrl,
     });
   } catch (error) {
     console.error("Error in registerUser:", error);

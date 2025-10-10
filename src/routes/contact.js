@@ -1,6 +1,6 @@
 import express from 'express';
-import { transporter } from '../config/email.js';
 import { PrismaClient } from '@prisma/client';
+import { sendEmail } from '../config/email.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
         });
 
         // Send email to admin
-        await transporter.sendMail({
+        await sendEmail({
             from: process.env.EMAIL_USER,
             to: process.env.ADMIN_EMAIL,
             subject: `New Contact Form Submission: ${subject}`,
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
         });
 
         // Send confirmation email to user
-        await transporter.sendMail({
+        await sendEmail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: 'Thank you for contacting us - ICCICT 2026',
