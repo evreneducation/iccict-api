@@ -111,7 +111,7 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
     from: process.env.BREVO_FROM_EMAIL,
     fromName: "ICCICT 2026",
     to: speakerData.email,
-    subject: "ICCICT 2026 | Presenter Registration Confirmation",
+    subject: "ICCICT 2026 | Speaker Registration Confirmation",
     html: speakerConfirmationTemplate(speakerData),
   };
 
@@ -119,7 +119,7 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
     from: process.env.BREVO_FROM_EMAIL,
     fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
-    subject: `New Presenter Registration: ${speakerData.name}`,
+    subject: `New Speaker Registration: ${speakerData.name}`,
     html: speakerAdminNotificationTemplate(speakerData),
   };
 
@@ -266,7 +266,7 @@ export async function sendSpeakerToCommitteeEmail(
     from: process.env.BREVO_FROM_EMAIL,
     fromName: "ICCICT 2026",
     to: committeeMember.email,
-    subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
+    subject: `ICCICT 2026 | Speaker/Presenter Review Request: ${speakerData.name}`,
     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
     attachments,
   };
@@ -645,13 +645,13 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
         <p>For any questions or updates regarding your keynote speaker application, please contact us at:</p>
         <ul>
           <li>Email: info@ICCICT.org</li>
-          <li>Phone: +968 93391308 / +91-9540111207</li>
+          <li>Phone: +91-9540111207/ +91-9540111307</li>
         </ul>
       </div>
       
       <div class="info-section">
         <h3>📅 Conference Details</h3>
-        <p><strong>Date:</strong> November 10th, 2025</p>
+        <p><strong>Date:</strong> January 22-23, 2025</p>
         <p><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</p>
         <p><strong>Website:</strong> <a href="https://www.ICCICT.org">www.ICCICT.org</a></p>
       </div>
@@ -697,19 +697,19 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>📋 Presenter Review Request</h1>
+      <h1>📋 Speaker/Presenter Review Request</h1>
       <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
     </div>
     
     <div class="content">
       <h2>Dear ${committeeMember.name},</h2>
       
-      <p>You have been assigned to review a presenter application for ICCICT 2026. Please find the complete presenter details below for your evaluation.</p>
+      <p>You have been assigned to review a speaker/presenter application for ICCICT 2026. Please find the complete speaker/presenter details below for your evaluation.</p>
       
       <div class="priority">⏰ Review Priority: Standard Review Timeline</div>
       
       <div class="section">
-        <h3>👤 Presenter Information</h3>
+        <h3>👤 Speaker Information</h3>
         <div class="grid">
           <div>
             <div class="label">Full Name:</div>
@@ -838,7 +838,7 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
       <div style="text-align: center; margin: 30px 0;">
         <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #019087;">
           <h3 style="color: #019087; margin-bottom: 15px;">Review Actions Required</h3>
-          <p style="margin-bottom: 20px;">Please review the presenter application and provide your recommendation:</p>
+          <p style="margin-bottom: 20px;">Please review the speaker/presenter application and provide your recommendation:</p>
           
           <div style="margin-bottom: 20px;">
             <a href="https://www.ICCICT.org/paper-review.html?id=${
@@ -854,27 +854,27 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
           <div>
             <a href="mailto:${
               process.env.ADMIN_EMAIL
-            }?subject=Presenter%20Review%20-%20APPROVED%20-${
+            }?subject=Speaker/Presenter%20Review%20-%20APPROVED%20-${
   speakerData.name
-}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
+}&body=Speaker/Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
   speakerData.paperTitle
 }%0D%0ARecommendation:APPROVED%0D%0AComments:" class="cta-button" style="background: #28a745;">
               ✅ APPROVE
             </a>
             <a href="mailto:${
               process.env.ADMIN_EMAIL
-            }?subject=Presenter%20Review%20-%20NEEDS%20REVISION%20-${
+            }?subject=Speaker/Presenter%20Review%20-%20NEEDS%20REVISION%20-${
   speakerData.name
-}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
+}&body=Speaker/Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
   speakerData.paperTitle
 }%0D%0ARecommendation:NEEDS%20REVISION%0D%0AComments:" class="cta-button" style="background: #ffc107; color: #000;">
               📝 NEEDS REVISION
             </a>
             <a href="mailto:${
               process.env.ADMIN_EMAIL
-            }?subject=Presenter%20Review%20-%20REJECTED%20-%20${
+            }?subject=Speaker/Presenter%20Review%20-%20REJECTED%20-%20${
   speakerData.name
-}&body=Presenter%20Name:%20${speakerData.name}%0D%0APaper%20Title:%20${
+}&body=Speaker/Presenter%20Name:%20${speakerData.name}%0D%0APaper%20Title:%20${
   speakerData.paperTitle
 }%0D%0ARecommendation:%20REJECTED%0D%0AComments:" class="cta-button" style="background: #dc3545;">
               ❌ REJECT
@@ -891,7 +891,7 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
         <p>If you have any questions about this review or need additional information, please contact:</p>
         <ul>
           <li><strong>Conference Email:</strong> info@ICCICT.org</li>
-          <li><strong>Phone:</strong> +968 93391308 / +91-9540111207</li>
+          <li><strong>Phone:</strong> +91-9540111207/ +91-9540111307</li>
           <li><strong>Review Deadline:</strong> Please provide your feedback within 72 hour</li>
         </ul>
       </div>
@@ -1136,3 +1136,381 @@ const keynoteSpeakerAdminNotificationTemplate = (keynoteSpeakerData) => `
 </body>
 </html>
 `;
+
+const reviewerExpressionAcceptedTemplate = (reviewerData) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #019087, #40c4ba); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .section { background: white; margin: 15px 0; padding: 20px; border-radius: 8px; border-left: 4px solid #019087; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .label { font-weight: bold; color: #019087; }
+    .value { margin-bottom: 10px; }
+    .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #28a745; }
+    .cta-button { display: inline-block; background: #019087; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 15px 5px; font-weight: bold; }
+    .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; padding: 20px; background: white; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Reviewer Application Accepted!</h1>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
+    </div>
+    
+    <div class="content">
+      <h2>Dear ${reviewerData.name},</h2>
+      
+      <div class="success">
+        <h3>✅ Congratulations!</h3>
+        <p>We are pleased to inform you that your application to serve as a reviewer for ICCICT 2026 has been <strong>ACCEPTED</strong>!</p>
+      </div>
+      
+      <div class="section">
+        <h3>📋 Your Reviewer Profile</h3>
+        <div class="grid">
+          <div>
+            <div class="label">Name:</div>
+            <div class="value">${reviewerData.name}</div>
+          </div>
+          <div>
+            <div class="label">Email:</div>
+            <div class="value">${reviewerData.email}</div>
+          </div>
+          <div>
+            <div class="label">Designation:</div>
+            <div class="value">${reviewerData.currentJobTitle}</div>
+          </div>
+          <div>
+            <div class="label">Institution:</div>
+            <div class="value">${reviewerData.institution}</div>
+          </div>
+          <div>
+            <div class="label">Expertise Areas:</div>
+            <div class="value">${Array.isArray(reviewerData.subjectArea) ? reviewerData.subjectArea.join(', ') : reviewerData.subjectArea}</div>
+          </div>
+          <div>
+            <div class="label">Status:</div>
+            <div class="value" style="color: #28a745; font-weight: bold;">ACTIVE REVIEWER</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>🎯 What Happens Next?</h3>
+        <ul>
+          <li>You have been added to our reviewing committee</li>
+          <li>You will receive review assignments for papers in your area of expertise</li>
+          <li>Review assignments will be sent via email with detailed instructions</li>
+          <li>You can access the review portal using your email address</li>
+        </ul>
+      </div>
+      
+      <div class="section">
+        <h3>📧 Review Process Guidelines</h3>
+        <ul>
+          <li><strong>Review Timeline:</strong> You will have 72 hours to complete each review</li>
+          <li><strong>Review Criteria:</strong> Content quality, academic merit, conference alignment, and innovation</li>
+          <li><strong>Decision Options:</strong> Approve, Needs Revision, or Reject</li>
+          <li><strong>Feedback:</strong> Provide constructive feedback to help authors improve their work</li>
+        </ul>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <div style="background: white; padding: 20px; border-radius: 8px; border: 2px solid #019087;">
+          <h3 style="color: #019087; margin-bottom: 15px;">Review Portal Access</h3>
+          <p style="margin-bottom: 20px;">You can access the review portal to view your assignments and submit reviews:</p>
+          <a href="https://www.ICCICT.org/paper-review.html" class="cta-button">
+            🔍 Access Review Portal
+          </a>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>📞 Contact Information</h3>
+        <p>If you have any questions about the review process or need assistance, please contact:</p>
+        <ul>
+          <li><strong>Conference Email:</strong> info@ICCICT.org</li>
+          <li><strong>Phone:</strong> +968 93391308 / +91-9540111207</li>
+          <li><strong>Review Support:</strong> Available Monday-Friday, 9 AM - 6 PM</li>
+        </ul>
+      </div>
+      
+      <div class="footer">
+        <p><strong>Thank you for joining the ICCICT 2026 Review Committee!</strong></p>
+        <p style="color: #666; font-size: 12px; margin-top: 15px;">
+          This is an automated email from the ICCICT 2026 Conference Management System.<br>
+          Your expertise and time are greatly appreciated in maintaining the quality of our conference.
+        </p>
+        <p style="margin-top: 10px;">&copy; 2025 ICCICT. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+// Email template for reviewer expression rejection
+const reviewerExpressionRejectedTemplate = (reviewerData) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #019087, #40c4ba); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .section { background: white; margin: 15px 0; padding: 20px; border-radius: 8px; border-left: 4px solid #019087; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .label { font-weight: bold; color: #019087; }
+    .value { margin-bottom: 10px; }
+    .info { background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #17a2b8; }
+    .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; padding: 20px; background: white; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 Reviewer Application Update</h1>
+      <p>ICCICT 2026 - International Conference on AI, ML, IoT & Computer Science</p>
+    </div>
+    
+    <div class="content">
+      <h2>Dear ${reviewerData.name},</h2>
+      
+      <div class="info">
+        <h3>📝 Application Status Update</h3>
+        <p>Thank you for your interest in serving as a reviewer for ICCICT 2026. After careful consideration, we are unable to accept your application at this time.</p>
+      </div>
+      
+      <div class="section">
+        <h3>📋 Your Application Details</h3>
+        <div class="grid">
+          <div>
+            <div class="label">Name:</div>
+            <div class="value">${reviewerData.name}</div>
+          </div>
+          <div>
+            <div class="label">Email:</div>
+            <div class="value">${reviewerData.email}</div>
+          </div>
+          <div>
+            <div class="label">Designation:</div>
+            <div class="value">${reviewerData.currentJobTitle}</div>
+          </div>
+          <div>
+            <div class="label">Institution:</div>
+            <div class="value">${reviewerData.institution}</div>
+          </div>
+          <div>
+            <div class="label">Status:</div>
+            <div class="value" style="color: #dc3545; font-weight: bold;">NOT SELECTED</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>💡 Future Opportunities</h3>
+        <p>We appreciate your interest in contributing to ICCICT 2026. While we cannot accommodate your application this time, we encourage you to:</p>
+        <ul>
+          <li>Consider submitting a paper for presentation at the conference</li>
+          <li>Attend as a participant to network with researchers in your field</li>
+          <li>Apply for future conference review opportunities</li>
+          <li>Stay updated on ICCICT events and announcements</li>
+        </ul>
+      </div>
+      
+      <div class="section">
+        <h3>📧 Stay Connected</h3>
+        <p>For any questions or to learn more about ICCICT 2026, please contact:</p>
+        <ul>
+          <li><strong>Conference Email:</strong> info@ICCICT.org</li>
+          <li><strong>Phone:</strong> +968 93391308 / +91-9540111207</li>
+          <li><strong>Website:</strong> <a href="https://www.ICCICT.org">www.ICCICT.org</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer">
+        <p><strong>Thank you for your interest in ICCICT 2026!</strong></p>
+        <p style="color: #666; font-size: 12px; margin-top: 15px;">
+          This is an automated email from the ICCICT 2026 Conference Management System.
+        </p>
+        <p style="margin-top: 10px;">&copy; 2025 ICCICT. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+// Email template for admin notification of new reviewer expression
+const reviewerExpressionAdminNotificationTemplate = (reviewerData) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+    .header { background: #019087; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+    .section { background: white; margin: 15px 0; padding: 20px; border-radius: 8px; border-left: 4px solid #019087; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .label { font-weight: bold; color: #019087; }
+    .value { margin-bottom: 10px; }
+    .status { background: #fff3cd; color: #856404; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; }
+    .cta-button { display: inline-block; background: #019087; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 15px 5px; font-weight: bold; }
+    .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; padding: 20px; background: white; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📝 New Reviewer Expression Received</h1>
+      <p>ICCICT 2026 Conference Management</p>
+    </div>
+    
+    <div class="content">
+      <div class="section">
+        <h2>Reviewer Application Details</h2>
+        <span class="status">⏳ PENDING REVIEW</span>
+        
+        <div class="grid" style="margin-top: 20px;">
+          <div>
+            <div class="label">Full Name:</div>
+            <div class="value">${reviewerData.name}</div>
+          </div>
+          <div>
+            <div class="label">Email:</div>
+            <div class="value">${reviewerData.email}</div>
+          </div>
+          <div>
+            <div class="label">Phone:</div>
+            <div class="value">${reviewerData.phone || 'Not provided'}</div>
+          </div>
+          <div>
+            <div class="label">Current Job Title:</div>
+            <div class="value">${reviewerData.currentJobTitle}</div>
+          </div>
+          <div>
+            <div class="label">Institution:</div>
+            <div class="value">${reviewerData.institution}</div>
+          </div>
+          <div>
+            <div class="label">Application Date:</div>
+            <div class="value">${new Date(reviewerData.createdAt).toLocaleDateString()}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>Academic Background</h3>
+        <div class="value">
+          <p><strong>Education:</strong> ${Array.isArray(reviewerData.education) ? reviewerData.education.join(', ') : reviewerData.education || 'Not specified'}</p>
+          <p><strong>Subject Areas:</strong> ${Array.isArray(reviewerData.subjectArea) ? reviewerData.subjectArea.join(', ') : reviewerData.subjectArea || 'Not specified'}</p>
+          <p><strong>Methodological Expertise:</strong> ${Array.isArray(reviewerData.methodologicalExpertise) ? reviewerData.methodologicalExpertise.join(', ') : reviewerData.methodologicalExpertise || 'Not specified'}</p>
+          <p><strong>Research Interests:</strong> ${Array.isArray(reviewerData.researchInterest) ? reviewerData.researchInterest.join(', ') : reviewerData.researchInterest || 'Not specified'}</p>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>Review Experience</h3>
+        <div class="value">
+          <p><strong>Previous Peer Review Experience:</strong></p>
+          <p style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
+            ${reviewerData.previousPeerReviewExperience || 'Not specified'}
+          </p>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>Additional Information</h3>
+        <div class="value">
+          <p><strong>Conflict of Interest:</strong></p>
+          <p style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
+            ${reviewerData.conflictOfInterest || 'None declared'}
+          </p>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>📄 Attached Documents</h3>
+        <div class="value">
+          <p><strong>CV/Resume:</strong> ${reviewerData.cvUrl ? '✅ Uploaded' : '❌ Not uploaded'}</p>
+          ${reviewerData.cvUrl ? `<p><a href="${reviewerData.cvUrl}" target="_blank" style="color: #019087;">Download CV</a></p>` : ''}
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
+        <p><strong>⚡ Action Required:</strong> Please review this reviewer application and update the status accordingly.</p>
+        <p style="color: #666; font-size: 14px;">Application ID: ${reviewerData.id}</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+// Email functions for reviewer expressions
+export async function sendReviewerExpressionStatusEmail(reviewerData, status) {
+  try {
+    let subject, html;
+    
+    if (status === 'ACCEPTED') {
+      subject = `ICCICT 2026 | Reviewer Application Accepted - ${reviewerData.name}`;
+      html = reviewerExpressionAcceptedTemplate(reviewerData);
+    } else if (status === 'REJECTED') {
+      subject = `ICCICT 2026 | Reviewer Application Update - ${reviewerData.name}`;
+      html = reviewerExpressionRejectedTemplate(reviewerData);
+    } else {
+      // Don't send email for PENDING status
+      return false;
+    }
+
+    const mailOptions = {
+      from: process.env.BREVO_FROM_EMAIL,
+      fromName: "ICCICT 2026",
+      to: reviewerData.email,
+      subject,
+      html
+    };
+
+    await sendEmail(mailOptions);
+    console.log(`Reviewer expression status email sent successfully to ${reviewerData.email}`);
+    return true;
+  } catch (error) {
+    console.error("Reviewer expression status email error:", {
+      error: error.message,
+      reviewer: reviewerData.email,
+      status,
+      timestamp: new Date().toISOString()
+    });
+    return false;
+  }
+}
+
+export async function sendReviewerExpressionAdminNotification(reviewerData) {
+  try {
+    const adminMailOptions = {
+      from: process.env.BREVO_FROM_EMAIL,
+      fromName: "ICCICT 2026",
+      to: process.env.ADMIN_EMAIL,
+      subject: `New Reviewer Expression: ${reviewerData.name}`,
+      html: reviewerExpressionAdminNotificationTemplate(reviewerData)
+    };
+
+    await sendEmail(adminMailOptions);
+    console.log(`Reviewer expression admin notification sent successfully`);
+    return true;
+  } catch (error) {
+    console.error("Reviewer expression admin notification error:", {
+      error: error.message,
+      reviewer: reviewerData.email,
+      timestamp: new Date().toISOString()
+    });
+    return false;
+  }
+}

@@ -47,7 +47,7 @@ export const welcomeTemplate = (userData) => `
       <div class="info-section">
         <h3>📅 Conference Details</h3>
         <ul>
-          <li><strong>Date:</strong> November 10, 2025</li>
+          <li><strong>Date:</strong> January 22-23, 2026</li>
           <li><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</li>
           <li><strong>Website:</strong> <a href="https://www.iccict.org">www.iccict.org</a></li>
         </ul>
@@ -242,10 +242,10 @@ export const speakerConfirmationTemplate = (speakerData) => `
       <div class="info-section">
         <h3>📅 Important Dates</h3>
         <ul>
-          <li><strong>Conference Dates:</strong> November 10-11, 2025</li>
+          <li><strong>Conference Dates:</strong> January 22-23, 2026</li>
           <li><strong>Paper Review Deadline:</strong> Within 10 business days after submission</li>
-          <li><strong>Final Paper Submission:</strong> October 30, 2025</li>
-          <li><strong>Registration Deadline:</strong> November 1, 2025</li>
+          <li><strong>Final Paper Submission:</strong> December 15, 2025</li>
+          <li><strong>Registration Deadline:</strong> December 25, 2025</li>
         </ul>
       </div>
       
@@ -264,7 +264,7 @@ export const speakerConfirmationTemplate = (speakerData) => `
         <p>For any questions about your submission, please contact us at:</p>
         <ul>
           <li>Email: info@iccict.org</li>
-          <li>Phone: +968 93391308 / +91-9540111207</li>
+          <li>Phone: +91-9540111207/ +91-9540111307</li>
         </ul>
       </div>
       
@@ -310,13 +310,13 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>📄 New Presenter Registration</h1>
+      <h1>📄 New Speaker Registration</h1>
       <p>ICCICT 2026 Conference</p>
     </div>
     
     <div class="content">
       <div class="section">
-        <h2>Presenter Details</h2>
+        <h2>Speaker Details</h2>
         <span class="status">⏳ PENDING REVIEW</span>
         
         <div class="grid" style="margin-top: 20px;">
@@ -357,7 +357,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
         <div class="value">${speakerData.conferenceTitle}</div>
         
         <div class="label">Conference Details:</div>
-        <div class="value">${speakerData.placeDate || 'November 10-11, 2025 - India International Centre, Lodhi Estate, New Delhi, India'}</div>
+        <div class="value">${speakerData.placeDate || 'January 22-23, 2026 - India International Centre, Lodhi Estate, New Delhi, India'}</div>
         
         <div class="label">Submission File:</div>
         <div class="value">
@@ -457,7 +457,7 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
       <div class="info-section">
         <h3>📅 Conference Information</h3>
         <ul>
-          <li><strong>Date:</strong> November 10-11, 2025</li>
+          <li><strong>Date:</strong> January 22-23, 2026</li>
           <li><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</li>
           <li><strong>Expected Attendees:</strong> 500+ academics and industry professionals</li>
           <li><strong>Website:</strong> <a href="https://www.iccict.org">www.iccict.org</a></li>
@@ -470,7 +470,7 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
         <ul>
           <li>Email: partnerships@iccict.org</li>
           <li>General: info@iccict.org</li>
-          <li>Phone: +968 93391308 / +91-9540111207</li>
+          <li>Phone: +91-9540111207/ +91-9540111307</li>
         </ul>
       </div>
       
@@ -563,7 +563,7 @@ export const sponsorAdminNotificationTemplate = (sponsorData) => `
         <h3>📊 Sponsorship Summary</h3>
         <div class="value">
           <p><strong>Conference:</strong> ICCICT 2026</p>
-          <p><strong>Date:</strong> November 10-11, 2025</p>
+          <p><strong>Date:</strong> January 22-23, 2026</p>
           <p><strong>Venue:</strong> India International Centre, Lodhi Estate, New Delhi, India</p>
           <p><strong>Status:</strong> Payment Pending</p>
         </div>

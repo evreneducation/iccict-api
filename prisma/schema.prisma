@@ -22,15 +22,15 @@ model registerUser {
   id               Int      @id @default(autoincrement())
   name             String
   email            String   @unique
-  registrationType String
+  registrationType String?
   institutionName  String
   country          String
   phone            String
   earlyBird        Boolean
-  regFee           String
-  paperId              String @unique
-  transactionId        String  @unique
-  uploadPaymentReceipt String
+  regFee           String?
+  paperId              String?
+  transactionId        String?
+  uploadPaymentReceipt String?
   isPaid           Boolean  @default(false)
   referralCode     String?
   referredById     String?

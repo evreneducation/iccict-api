@@ -1,5 +1,8 @@
 import { prisma } from "../config/db.js";
-
+import { 
+  sendReviewerExpressionStatusEmail, 
+  sendReviewerExpressionAdminNotification 
+} from "../services/emailService.js";
 /* ------------------------- helpers ------------------------- */
 
 /**
@@ -135,6 +138,15 @@ export const createReviewerExpression = async (req, res) => {
     payload.cvUrl = extractCvUrl(req);
 
     const created = await prisma.ReviewerExpression.create({ data: payload });
+
+    // Send admin notification email
+    try {
+      await sendReviewerExpressionAdminNotification(created);
+    } catch (emailError) {
+      console.error("Failed to send admin notification:", emailError);
+      // Don't fail the registration if email fails
+    }
+
     return res.status(201).json({
       success: true,
       message: "Reviewer expression submitted successfully",
@@ -271,6 +283,14 @@ export const updateReviewerExpressionStatus = async (req, res) => {
 
       return { updated, committee };
     });
+
+    // Send status notification email
+    try {
+      await sendReviewerExpressionStatusEmail(existing, status);
+    } catch (emailError) {
+      console.error("Failed to send status notification:", emailError);
+      // Don't fail the status update if email fails
+    }
 
     return res.json({
       success: true,

@@ -85,56 +85,56 @@ export const registerUser = async (req, res) => {
 
   try {
     // Validate required text fields
-    if (!paperId || !transactionId) {
-      return res.status(400).json({
-        message: "paperId and transactionId are required",
-        success: false,
-      });
-    }
+    // if (!paperId || !transactionId) {
+    //   return res.status(400).json({
+    //     message: "paperId and transactionId are required",
+    //     success: false,
+    //   });
+    // }
 
     // Validate receipt file presence
-    if (!receiptFile) {
-      return res.status(400).json({
-        message: "uploadPaymentReceipt file is required",
-        success: false,
-      });
-    }
+    // if (!receiptFile) {
+    //   return res.status(400).json({
+    //     message: "uploadPaymentReceipt file is required",
+    //     success: false,
+    //   });
+    // }
 
-    const receiptUrl =
-      receiptFile.secure_url ||
-      receiptFile.path ||
-      receiptFile.location ||
-      receiptFile.url ||
-      null;
+    // const receiptUrl =
+    //   receiptFile.secure_url ||
+    //   receiptFile.path ||
+    //   receiptFile.location ||
+    //   receiptFile.url ||
+    //   null;
 
-    if (!receiptUrl) {
-      return res.status(500).json({
-        message: "Uploaded receipt processed but URL could not be determined",
-        success: false,
-      });
-    }
+    // if (!receiptUrl) {
+    //   return res.status(500).json({
+    //     message: "Uploaded receipt processed but URL could not be determined",
+    //     success: false,
+    //   });
+    // }
 
     // Check if paperId already exists
-    const existingPaper = await prisma.registerUser.findUnique({
-      where: { paperId },
-    });
-    if (existingPaper) {
-      return res.status(400).json({
-        message: `Paper ID "${paperId}" already exists`,
-        success: false,
-      });
-    }
+    // const existingPaper = await prisma.registerUser.findUnique({
+    //   where: { paperId },
+    // });
+    // if (existingPaper) {
+    //   return res.status(400).json({
+    //     message: `Paper ID "${paperId}" already exists`,
+    //     success: false,
+    //   });
+    // }
 
     // Check if transactionId already exists
-    const existingTransaction = await prisma.registerUser.findUnique({
-      where: { transactionId },
-    });
-    if (existingTransaction) {
-      return res.status(400).json({
-        message: `Transaction ID "${transactionId}" already exists`,
-        success: false,
-      });
-    }
+    // const existingTransaction = await prisma.registerUser.findUnique({
+    //   where: { transactionId },
+    // });
+    // if (existingTransaction) {
+    //   return res.status(400).json({
+    //     message: `Transaction ID "${transactionId}" already exists`,
+    //     success: false,
+    //   });
+    // }
 
     // If referral code provided, validate admin
     let admin = null;
@@ -164,7 +164,7 @@ export const registerUser = async (req, res) => {
         referredById: admin?.id || null,
         paperId,
         transactionId,
-        uploadPaymentReceipt: receiptUrl,
+        uploadPaymentReceipt: "",
         conferenceJoiningMode,
       },
     });
@@ -177,7 +177,7 @@ export const registerUser = async (req, res) => {
 
     sendUserRegisterEmail({
       ...registerUserData,
-      uploadPaymentReceipt: receiptUrl,
+      // uploadPaymentReceipt: receiptUrl,
     });
   } catch (error) {
     console.error("Error in registerUser:", error);
