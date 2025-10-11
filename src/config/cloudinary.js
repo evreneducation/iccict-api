@@ -36,6 +36,8 @@ const paperStorage = new CloudinaryStorage({
       folder = 'conference-papers/docx';
     } else if (file.fieldname === 'zipFolderFile') {
       folder = 'conference-papers/zip';
+    } else if (file.fieldname === 'turnitinReport') {
+      folder = 'conference-papers/turnitin-reports';
     }
 
     return {
@@ -63,6 +65,10 @@ export const upload = multer({
     } else if (file.fieldname === 'zipFolderFile') {
       if (ext === '.zip') return cb(null, true);
       return cb(new Error('Zip folder must be .zip only!'), false);
+    } else if (file.fieldname === 'turnitinReport') {
+      // Allow PDF files for Turnitin reports
+      if (ext === '.pdf') return cb(null, true);
+      return cb(new Error('Turnitin report must be PDF only!'), false);
     }
     cb(new Error('Unknown file field!'), false);
   }

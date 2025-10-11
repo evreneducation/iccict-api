@@ -7,12 +7,39 @@ import {
   sponsorConfirmationTemplate,
   sponsorAdminNotificationTemplate,
 } from "../utils/emailTemplates/userRegistration.js";
-import { isMailerBlocked, nextSendTime, shouldCooldownFor, tripMailerCooldown } from "./mailerGuard.js";
+import {
+  isMailerBlocked,
+  nextSendTime,
+  shouldCooldownFor,
+  tripMailerCooldown,
+} from "./mailerGuard.js";
+import axios from "axios";
+
+// Helper function to download file and convert to base64
+async function downloadFileAsBase64(url) {
+  try {
+    const response = await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: 30000, // 30 second timeout
+      headers: {
+        "User-Agent": "ICCICT-Email-Service/1.0",
+      },
+    });
+
+    const base64 = Buffer.from(response.data, "binary").toString("base64");
+    return base64;
+  } catch (error) {
+    console.error(`Failed to download file from ${url}:`, error.message);
+    throw new Error(`Failed to download attachment: ${error.message}`);
+  }
+}
 
 export async function sendMailSafe(options) {
   if (isMailerBlocked()) {
     console.warn(
-      `[MailerGuard] Blocked; skipping send to ${options.to}. Retry after ${new Date(nextSendTime()).toISOString()}`
+      `[MailerGuard] Blocked; skipping send to ${
+        options.to
+      }. Retry after ${new Date(nextSendTime()).toISOString()}`
     );
     return { skipped: true, reason: "mailer_cooldown" };
   }
@@ -197,25 +224,42 @@ export async function sendKeynoteSpeakerRegistrationEmail(keynoteSpeakerData) {
   }
 }
 
-export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) {
+export async function sendSpeakerToCommitteeEmail(
+  speakerData,
+  committeeMember
+) {
   const attachments = [];
+  // Prefer the newer paperFileUrl if set; fallback to legacy fileUrl
   // Prefer the newer paperFileUrl if set; fallback to legacy fileUrl
   const paperUrl = speakerData.paperFileUrl || speakerData.fileUrl;
   if (paperUrl) {
-    // Note: For Brevo API, you'll need to convert file to base64
-    // This is a simplified version - you may need to implement file reading
-    attachments.push({
-      filename: `${(speakerData.paperId || 'Paper')}.pdf`,
-      content: paperUrl, // You'll need to read and encode the file
-      contentType: 'application/pdf'
-    });
+    try {
+      const base64Content = await downloadFileAsBase64(paperUrl);
+      attachments.push({
+        filename: `${speakerData.paperId || "Paper"}.pdf`,
+        content: base64Content,
+        contentType: "application/pdf",
+      });
+    } catch (error) {
+      console.warn(`Failed to attach paper file: ${error.message}`);
+      // Continue without attachment rather than failing the entire email
+    }
   }
+
   if (speakerData.turnitinReportUrl) {
-    attachments.push({
-      filename: `${(speakerData.paperId || 'Paper')}_Turnitin_Report.pdf`,
-      content: speakerData.turnitinReportUrl, // You'll need to read and encode the file
-      contentType: 'application/pdf'
-    });
+    try {
+      const base64Content = await downloadFileAsBase64(
+        speakerData.turnitinReportUrl
+      );
+      attachments.push({
+        filename: `${speakerData.paperId || "Paper"}_Turnitin_Report.pdf`,
+        content: base64Content,
+        contentType: "application/pdf",
+      });
+    } catch (error) {
+      console.warn(`Failed to attach Turnitin report: ${error.message}`);
+      // Continue without attachment rather than failing the entire email
+    }
   }
 
   const committeeMailOptions = {
@@ -224,41 +268,60 @@ export async function sendSpeakerToCommitteeEmail(speakerData, committeeMember) 
     to: committeeMember.email,
     subject: `ICCICT 2026 | Presenter Review Request: ${speakerData.name}`,
     html: speakerReviewCommitteeTemplate(speakerData, committeeMember),
-    attachments
+    attachments,
   };
 
   try {
     await sendEmail(committeeMailOptions);
-    console.log(`Speaker review email sent successfully to ${committeeMember.email}`);
+    console.log(
+      `Speaker review email sent successfully to ${committeeMember.email}`
+    );
     return true;
   } catch (error) {
-    console.error("Committee email service error:", { 
-      error: error.message, 
-      committeeMember: committeeMember.email, 
-      speaker: speakerData.email, 
-      timestamp: new Date().toISOString() 
+    console.error("Committee email service error:", {
+      error: error.message,
+      committeeMember: committeeMember.email,
+      speaker: speakerData.email,
+      timestamp: new Date().toISOString(),
     });
     throw error;
   }
 }
 
 export async function sendReviewReminderEmail(speakerData, committeeMember) {
-  // --- attachments (same behavior as before)
   const attachments = [];
   const paperUrl = speakerData.paperFileUrl || speakerData.fileUrl;
+
   if (paperUrl) {
-    attachments.push({ 
-      filename: `${(speakerData.paperId || "Paper")}.pdf`, 
-      content: paperUrl, // You'll need to read and encode the file
-      contentType: 'application/pdf'
-    });
+    try {
+      const base64Content = await downloadFileAsBase64(paperUrl);
+      attachments.push({
+        filename: `${speakerData.paperId || "Paper"}.pdf`,
+        content: base64Content,
+        contentType: "application/pdf",
+      });
+    } catch (error) {
+      console.warn(
+        `Failed to attach paper file for reminder: ${error.message}`
+      );
+    }
   }
+
   if (speakerData.turnitinReportUrl) {
-    attachments.push({
-      filename: `${(speakerData.paperId || "Paper")}_Turnitin_Report.pdf`,
-      content: speakerData.turnitinReportUrl, // You'll need to read and encode the file
-      contentType: 'application/pdf'
-    });
+    try {
+      const base64Content = await downloadFileAsBase64(
+        speakerData.turnitinReportUrl
+      );
+      attachments.push({
+        filename: `${speakerData.paperId || "Paper"}_Turnitin_Report.pdf`,
+        content: base64Content,
+        contentType: "application/pdf",
+      });
+    } catch (error) {
+      console.warn(
+        `Failed to attach Turnitin report for reminder: ${error.message}`
+      );
+    }
   }
 
   // --- helpers
@@ -270,11 +333,16 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
 
-  const reviewCount = typeof speakerData.reviewReminderCount === "number" ? speakerData.reviewReminderCount : null;
+  const reviewCount =
+    typeof speakerData.reviewReminderCount === "number"
+      ? speakerData.reviewReminderCount
+      : null;
 
   const decisionMailto = (decision) => {
     const subject = encodeURIComponent(
-      `[ICCICT Review] ${decision} — ${speakerData.paperId || ""} ${speakerData.paperTitle || ""}`.trim()
+      `[ICCICT Review] ${decision} — ${speakerData.paperId || ""} ${
+        speakerData.paperTitle || ""
+      }`.trim()
     );
     const body = encodeURIComponent(
       `Decision: ${decision}\n` +
@@ -287,8 +355,11 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
   };
 
   // Optional: configurable review portal URL; falls back to a sensible default
-  const baseReviewUrl = process.env.REVIEW_PORTAL_URL || "https://www.ICCICT.org/paper-review.html";
-  const reviewUrl = `${baseReviewUrl}?id=${encodeURIComponent(speakerData.id || "")}`;
+  const baseReviewUrl =
+    process.env.REVIEW_PORTAL_URL || "https://www.ICCICT.org/paper-review.html";
+  const reviewUrl = `${baseReviewUrl}?id=${encodeURIComponent(
+    speakerData.id || ""
+  )}`;
 
   // convenience labels
   const authorName = esc(speakerData.name);
@@ -299,13 +370,16 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
   const attendeeType = esc(speakerData.attendeeType || "");
   const paperId = esc(speakerData.paperId || speakerData.id || "");
   const paperTitle = esc(speakerData.paperTitle || "Untitled Submission");
-  const createdOn = speakerData.createdAt ? new Date(speakerData.createdAt).toLocaleDateString() : "";
+  const createdOn = speakerData.createdAt
+    ? new Date(speakerData.createdAt).toLocaleDateString()
+    : "";
   const adminEmail = esc(process.env.ADMIN_EMAIL || "info@ICCICT.org");
 
   // --- subject + preheader
   const subject =
-    `Gentle Reminder: Review pending — ${paperId} ${paperTitle}`.replace(/\s+/g, " ").trim() +
-    (reviewCount != null ? ` (reminder #${reviewCount + 1})` : "");
+    `Gentle Reminder: Review pending — ${paperId} ${paperTitle}`
+      .replace(/\s+/g, " ")
+      .trim() + (reviewCount != null ? ` (reminder #${reviewCount + 1})` : "");
 
   const preheader =
     "Action needed: please review this submission and send your decision (Approve / Needs Revision / Reject).";
@@ -354,13 +428,35 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
                     </tr>
                     <tr>
                       <td style="padding:6px 0;color:#019087;font-weight:bold;">Author</td>
-                      <td style="padding:6px 0;">${authorName}${authorEmail ? ` &lt;${authorEmail}&gt;` : ""}</td>
+                      <td style="padding:6px 0;">${authorName}${
+    authorEmail ? ` &lt;${authorEmail}&gt;` : ""
+  }</td>
                     </tr>
-                    ${phone ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Phone</td><td style="padding:6px 0;">${phone}</td></tr>` : ""}
-                    ${country ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Country</td><td style="padding:6px 0;">${country}</td></tr>` : ""}
-                    ${inst ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Institution</td><td style="padding:6px 0;">${inst}</td></tr>` : ""}
-                    ${attendeeType ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Attendee Type</td><td style="padding:6px 0;">${attendeeType}</td></tr>` : ""}
-                    ${createdOn ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Registered On</td><td style="padding:6px 0;">${createdOn}</td></tr>` : ""}
+                    ${
+                      phone
+                        ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Phone</td><td style="padding:6px 0;">${phone}</td></tr>`
+                        : ""
+                    }
+                    ${
+                      country
+                        ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Country</td><td style="padding:6px 0;">${country}</td></tr>`
+                        : ""
+                    }
+                    ${
+                      inst
+                        ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Institution</td><td style="padding:6px 0;">${inst}</td></tr>`
+                        : ""
+                    }
+                    ${
+                      attendeeType
+                        ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Attendee Type</td><td style="padding:6px 0;">${attendeeType}</td></tr>`
+                        : ""
+                    }
+                    ${
+                      createdOn
+                        ? `<tr><td style="padding:6px 0;color:#019087;font-weight:bold;">Registered On</td><td style="padding:6px 0;">${createdOn}</td></tr>`
+                        : ""
+                    }
                   </table>
                 </td>
               </tr>
@@ -377,12 +473,16 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
                   <h2 style="margin:0 0 10px 0;font-size:18px;color:#222;">Submitted Documents</h2>
                   ${
                     paperUrl
-                      ? `<a href="${esc(paperUrl)}" target="_blank" style="display:inline-block;margin:4px 6px 0 0;padding:8px 12px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;color:#495057;text-decoration:none;">📄 Download Paper</a>`
+                      ? `<a href="${esc(
+                          paperUrl
+                        )}" target="_blank" style="display:inline-block;margin:4px 6px 0 0;padding:8px 12px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;color:#495057;text-decoration:none;">📄 Download Paper</a>`
                       : `<span style="color:#dc3545;">❌ No paper file submitted</span>`
                   }
                   ${
                     speakerData.turnitinReportUrl
-                      ? `<a href="${esc(speakerData.turnitinReportUrl)}" target="_blank" style="display:inline-block;margin:4px 0 0 0;padding:8px 12px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;color:#495057;text-decoration:none;">📑 Download Turnitin Report</a>`
+                      ? `<a href="${esc(
+                          speakerData.turnitinReportUrl
+                        )}" target="_blank" style="display:inline-block;margin:4px 0 0 0;padding:8px 12px;background:#f8f9fa;border:1px solid #dee2e6;border-radius:4px;color:#495057;text-decoration:none;">📑 Download Turnitin Report</a>`
                       : ``
                   }
                 </td>
@@ -410,9 +510,15 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
 
                   <!-- Decision buttons -->
                   <div style="margin:0 0 8px 0;">
-                    <a href="${decisionMailto("APPROVED")}" style="display:inline-block;background:#28a745;color:#ffffff;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;margin-right:6px;">✅ Approve</a>
-                    <a href="${decisionMailto("NEEDS_REVISION")}" style="display:inline-block;background:#ffc107;color:#000000;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;margin-right:6px;">📝 Needs Revision</a>
-                    <a href="${decisionMailto("REJECTED")}" style="display:inline-block;background:#dc3545;color:#ffffff;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;">❌ Reject</a>
+                    <a href="${decisionMailto(
+                      "APPROVED"
+                    )}" style="display:inline-block;background:#28a745;color:#ffffff;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;margin-right:6px;">✅ Approve</a>
+                    <a href="${decisionMailto(
+                      "NEEDS_REVISION"
+                    )}" style="display:inline-block;background:#ffc107;color:#000000;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;margin-right:6px;">📝 Needs Revision</a>
+                    <a href="${decisionMailto(
+                      "REJECTED"
+                    )}" style="display:inline-block;background:#dc3545;color:#ffffff;padding:10px 14px;border-radius:6px;text-decoration:none;font-weight:bold;">❌ Reject</a>
                   </div>
 
                   <p style="margin:10px 0 0 0;font-size:12px;color:#666;">
@@ -450,10 +556,14 @@ export async function sendReviewReminderEmail(speakerData, committeeMember) {
     `Gentle Reminder — Review Required (ICCICT 2026)\n\n` +
     `Paper ID: ${paperId}\n` +
     `Title: ${speakerData.paperTitle || "Untitled Submission"}\n` +
-    `Author: ${speakerData.name || ""} ${speakerData.email ? `<${speakerData.email}>` : ""}\n` +
+    `Author: ${speakerData.name || ""} ${
+      speakerData.email ? `<${speakerData.email}>` : ""
+    }\n` +
     (createdOn ? `Registered On: ${createdOn}\n` : "") +
     (paperUrl ? `Download Paper: ${paperUrl}\n` : "No paper file submitted\n") +
-    (speakerData.turnitinReportUrl ? `Turnitin Report: ${speakerData.turnitinReportUrl}\n` : "") +
+    (speakerData.turnitinReportUrl
+      ? `Turnitin Report: ${speakerData.turnitinReportUrl}\n`
+      : "") +
     `\nActions:\n` +
     `Open Submission: ${reviewUrl}\n` +
     `Approve: ${decisionMailto("APPROVED")}\n` +
@@ -506,10 +616,18 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
       
       <div class="highlight">
         <h3>📋 Your Registration Details</h3>
-        <p><strong>Keynote Title:</strong> ${keynoteSpeakerData.keynoteTitle}</p>
-        <p><strong>Expertise Area:</strong> ${keynoteSpeakerData.expertiseArea}</p>
-        <p><strong>Institution:</strong> ${keynoteSpeakerData.institutionName}</p>
-        <p><strong>Registration Date:</strong> ${new Date(keynoteSpeakerData.createdAt).toLocaleDateString()}</p>
+        <p><strong>Keynote Title:</strong> ${
+          keynoteSpeakerData.keynoteTitle
+        }</p>
+        <p><strong>Expertise Area:</strong> ${
+          keynoteSpeakerData.expertiseArea
+        }</p>
+        <p><strong>Institution:</strong> ${
+          keynoteSpeakerData.institutionName
+        }</p>
+        <p><strong>Registration Date:</strong> ${new Date(
+          keynoteSpeakerData.createdAt
+        ).toLocaleDateString()}</p>
       </div>
       
       <div class="info-section">
@@ -623,7 +741,9 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
       <div class="section">
         <h3>📄 Paper/Presentation Details</h3>
         <div class="label">Paper Title:</div>
-        <div class="value" style="font-size: 18px; font-weight: bold; color: #019087; margin-bottom: 15px;">${speakerData.paperTitle}</div>
+        <div class="value" style="font-size: 18px; font-weight: bold; color: #019087; margin-bottom: 15px;">${
+          speakerData.paperTitle
+        }</div>
         
         <div class="grid">
           <div>
@@ -636,33 +756,43 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
           </div>
         </div>
         
-        ${speakerData.message ? `
+        ${
+          speakerData.message
+            ? `
           <div style="margin-top: 15px;">
             <div class="label">Additional Message:</div>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
               ${speakerData.message}
             </div>
           </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
       
       <div class="section">
         <h3>📎 Submitted Documents</h3>
         <div class="value">
-          ${ (speakerData.paperFileUrl || speakerData.fileUrl) ? `
-            <a href="${speakerData.paperFileUrl || speakerData.fileUrl}" class="file-link" target="_blank">
+          ${
+            speakerData.paperFileUrl || speakerData.fileUrl
+              ? `
+            <a href="${
+              speakerData.paperFileUrl || speakerData.fileUrl
+            }" class="file-link" target="_blank">
               <i class="fas fa-file-pdf"></i> Download Paper/Abstract
-            </a>` :
-            '<span style="color: #dc3545;">❌ No paper file submitted</span>'
+            </a>`
+              : '<span style="color: #dc3545;">❌ No paper file submitted</span>'
           }
         </div>
 
         <div class="value" style="margin-top:8px;">
-          ${ speakerData.turnitinReportUrl ? `
+          ${
+            speakerData.turnitinReportUrl
+              ? `
             <a href="${speakerData.turnitinReportUrl}" class="file-link" target="_blank">
               <i class="fas fa-file-alt"></i> Download Turnitin Report
-            </a>` :
-            '<span style="color: #dc3545;">❌ No Turnitin report uploaded</span>'
+            </a>`
+              : '<span style="color: #dc3545;">❌ No Turnitin report uploaded</span>'
           }
         </div>
       </div>
@@ -673,18 +803,24 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
         <div class="grid">
           <div>
             <div class="label">Registration Date:</div>
-            <div class="value">${new Date(speakerData.createdAt).toLocaleDateString()}</div>
+            <div class="value">${new Date(
+              speakerData.createdAt
+            ).toLocaleDateString()}</div>
           </div>
           <div>
             <div class="label">Speaker ID:</div>
             <div class="value">${speakerData.id}</div>
           </div>
-          ${speakerData.referredBy ? `
+          ${
+            speakerData.referredBy
+              ? `
             <div>
               <div class="label">Referred By:</div>
               <div class="value">${speakerData.referredBy.email}</div>
             </div>
-          ` : ''}
+          `
+              : ""
+          }
         </div>
       </div>
       
@@ -705,7 +841,9 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
           <p style="margin-bottom: 20px;">Please review the presenter application and provide your recommendation:</p>
           
           <div style="margin-bottom: 20px;">
-            <a href="https://www.ICCICT.org/paper-review.html?id=${speakerData.id}" class="cta-button" style="background: #019087; margin-bottom: 10px;">
+            <a href="https://www.ICCICT.org/paper-review.html?id=${
+              speakerData.id
+            }" class="cta-button" style="background: #019087; margin-bottom: 10px;">
               📋 View Full Paper Details
             </a>
             <p style="font-size: 12px; color: #666; margin-top: 5px;">
@@ -714,13 +852,31 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
           </div>
           
           <div>
-            <a href="mailto:${process.env.ADMIN_EMAIL}?subject=Presenter%20Review%20-%20APPROVED%20-${speakerData.name}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${speakerData.paperTitle}%0D%0ARecommendation:APPROVED%0D%0AComments:" class="cta-button" style="background: #28a745;">
+            <a href="mailto:${
+              process.env.ADMIN_EMAIL
+            }?subject=Presenter%20Review%20-%20APPROVED%20-${
+  speakerData.name
+}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
+  speakerData.paperTitle
+}%0D%0ARecommendation:APPROVED%0D%0AComments:" class="cta-button" style="background: #28a745;">
               ✅ APPROVE
             </a>
-            <a href="mailto:${process.env.ADMIN_EMAIL}?subject=Presenter%20Review%20-%20NEEDS%20REVISION%20-${speakerData.name}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${speakerData.paperTitle}%0D%0ARecommendation:NEEDS%20REVISION%0D%0AComments:" class="cta-button" style="background: #ffc107; color: #000;">
+            <a href="mailto:${
+              process.env.ADMIN_EMAIL
+            }?subject=Presenter%20Review%20-%20NEEDS%20REVISION%20-${
+  speakerData.name
+}&body=Presenter%20Name:${speakerData.name}%0D%0APaper%20Title:%20${
+  speakerData.paperTitle
+}%0D%0ARecommendation:NEEDS%20REVISION%0D%0AComments:" class="cta-button" style="background: #ffc107; color: #000;">
               📝 NEEDS REVISION
             </a>
-            <a href="mailto:${process.env.ADMIN_EMAIL}?subject=Presenter%20Review%20-%20REJECTED%20-%20${speakerData.name}&body=Presenter%20Name:%20${speakerData.name}%0D%0APaper%20Title:%20${speakerData.paperTitle}%0D%0ARecommendation:%20REJECTED%0D%0AComments:" class="cta-button" style="background: #dc3545;">
+            <a href="mailto:${
+              process.env.ADMIN_EMAIL
+            }?subject=Presenter%20Review%20-%20REJECTED%20-%20${
+  speakerData.name
+}&body=Presenter%20Name:%20${speakerData.name}%0D%0APaper%20Title:%20${
+  speakerData.paperTitle
+}%0D%0ARecommendation:%20REJECTED%0D%0AComments:" class="cta-button" style="background: #dc3545;">
               ❌ REJECT
             </a>
           </div>
@@ -817,7 +973,9 @@ const keynoteSpeakerAdminNotificationTemplate = (keynoteSpeakerData) => `
           </div>
           <div>
             <div class="label">Department:</div>
-            <div class="value">${keynoteSpeakerData.department || 'Not specified'}</div>
+            <div class="value">${
+              keynoteSpeakerData.department || "Not specified"
+            }</div>
           </div>
           <div>
             <div class="label">Experience:</div>
@@ -843,15 +1001,21 @@ const keynoteSpeakerAdminNotificationTemplate = (keynoteSpeakerData) => `
           </div>
           <div>
             <div class="label">University:</div>
-            <div class="value">${keynoteSpeakerData.university || 'Not specified'}</div>
+            <div class="value">${
+              keynoteSpeakerData.university || "Not specified"
+            }</div>
           </div>
           <div>
             <div class="label">Publications:</div>
-            <div class="value">${keynoteSpeakerData.publicationsCount || 'Not specified'}</div>
+            <div class="value">${
+              keynoteSpeakerData.publicationsCount || "Not specified"
+            }</div>
           </div>
           <div>
             <div class="label">Previous Keynotes:</div>
-            <div class="value">${keynoteSpeakerData.keynoteExperience || 'Not specified'}</div>
+            <div class="value">${
+              keynoteSpeakerData.keynoteExperience || "Not specified"
+            }</div>
           </div>
         </div>
       </div>
@@ -859,60 +1023,113 @@ const keynoteSpeakerAdminNotificationTemplate = (keynoteSpeakerData) => `
       <div class="section">
         <h3>🎯 Proposed Keynote</h3>
         <div class="label">Title:</div>
-        <div class="value" style="font-size: 18px; font-weight: bold; color: #019087;">${keynoteSpeakerData.keynoteTitle}</div>
+        <div class="value" style="font-size: 18px; font-weight: bold; color: #019087;">${
+          keynoteSpeakerData.keynoteTitle
+        }</div>
         
         <div class="abstract">
           <div class="label">Abstract:</div>
-          <div style="margin-top: 10px; line-height: 1.8;">${keynoteSpeakerData.keynoteAbstract}</div>
+          <div style="margin-top: 10px; line-height: 1.8;">${
+            keynoteSpeakerData.keynoteAbstract
+          }</div>
         </div>
         
-        ${keynoteSpeakerData.targetAudience ? `
+        ${
+          keynoteSpeakerData.targetAudience
+            ? `
           <div class="label">Target Audience:</div>
           <div class="value">${keynoteSpeakerData.targetAudience}</div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
       
       <div class="section">
         <h3>📄 Uploaded Files</h3>
         <div class="value">
-          <p><strong>CV/Resume:</strong> ${keynoteSpeakerData.cvFileUrl ? '✅ Uploaded' : '❌ Not uploaded'}</p>
-          <p><strong>Photo:</strong> ${keynoteSpeakerData.photoFileUrl ? '✅ Uploaded' : '❌ Not uploaded'}</p>
-          <p><strong>Sample Presentation:</strong> ${keynoteSpeakerData.presentationFileUrl ? '✅ Uploaded' : '❌ Not uploaded'}</p>
+          <p><strong>CV/Resume:</strong> ${
+            keynoteSpeakerData.cvFileUrl ? "✅ Uploaded" : "❌ Not uploaded"
+          }</p>
+          <p><strong>Photo:</strong> ${
+            keynoteSpeakerData.photoFileUrl ? "✅ Uploaded" : "❌ Not uploaded"
+          }</p>
+          <p><strong>Sample Presentation:</strong> ${
+            keynoteSpeakerData.presentationFileUrl
+              ? "✅ Uploaded"
+              : "❌ Not uploaded"
+          }</p>
         </div>
       </div>
       
       <div class="section">
         <h3>🌐 Online Presence</h3>
         <div class="value">
-          ${keynoteSpeakerData.linkedinProfile ? `<p><strong>LinkedIn:</strong> <a href="${keynoteSpeakerData.linkedinProfile}" target="_blank">${keynoteSpeakerData.linkedinProfile}</a></p>` : ''}
-          ${keynoteSpeakerData.website ? `<p><strong>Website:</strong> <a href="${keynoteSpeakerData.website}" target="_blank">${keynoteSpeakerData.website}</a></p>` : ''}
-          ${keynoteSpeakerData.orcidId ? `<p><strong>ORCID:</strong> ${keynoteSpeakerData.orcidId}</p>` : ''}
-          ${keynoteSpeakerData.googleScholar ? `<p><strong>Google Scholar:</strong> <a href="${keynoteSpeakerData.googleScholar}" target="_blank">${keynoteSpeakerData.googleScholar}</a></p>` : ''}
-          ${!keynoteSpeakerData.linkedinProfile && !keynoteSpeakerData.website && !keynoteSpeakerData.orcidId && !keynoteSpeakerData.googleScholar ? '<p>No online profiles provided</p>' : ''}
+          ${
+            keynoteSpeakerData.linkedinProfile
+              ? `<p><strong>LinkedIn:</strong> <a href="${keynoteSpeakerData.linkedinProfile}" target="_blank">${keynoteSpeakerData.linkedinProfile}</a></p>`
+              : ""
+          }
+          ${
+            keynoteSpeakerData.website
+              ? `<p><strong>Website:</strong> <a href="${keynoteSpeakerData.website}" target="_blank">${keynoteSpeakerData.website}</a></p>`
+              : ""
+          }
+          ${
+            keynoteSpeakerData.orcidId
+              ? `<p><strong>ORCID:</strong> ${keynoteSpeakerData.orcidId}</p>`
+              : ""
+          }
+          ${
+            keynoteSpeakerData.googleScholar
+              ? `<p><strong>Google Scholar:</strong> <a href="${keynoteSpeakerData.googleScholar}" target="_blank">${keynoteSpeakerData.googleScholar}</a></p>`
+              : ""
+          }
+          ${
+            !keynoteSpeakerData.linkedinProfile &&
+            !keynoteSpeakerData.website &&
+            !keynoteSpeakerData.orcidId &&
+            !keynoteSpeakerData.googleScholar
+              ? "<p>No online profiles provided</p>"
+              : ""
+          }
         </div>
       </div>
       
-      ${keynoteSpeakerData.additionalComments ? `
+      ${
+        keynoteSpeakerData.additionalComments
+          ? `
         <div class="section">
           <h3>💬 Additional Comments</h3>
           <div class="value">${keynoteSpeakerData.additionalComments}</div>
         </div>
-      ` : ''}
+      `
+          : ""
+      }
       
       <div class="section">
         <h3>📊 Quick Summary</h3>
         <div class="value">
-          <p><strong>Registered:</strong> ${new Date(keynoteSpeakerData.createdAt).toLocaleString()}</p>
+          <p><strong>Registered:</strong> ${new Date(
+            keynoteSpeakerData.createdAt
+          ).toLocaleString()}</p>
           <p><strong>Status:</strong> ${keynoteSpeakerData.status}</p>
-          <p><strong>Accommodation Needed:</strong> ${keynoteSpeakerData.accommodationNeeded || 'Not specified'}</p>
-          <p><strong>Preferred Session:</strong> ${keynoteSpeakerData.preferredSessionTime || 'No preference'}</p>
-          <p><strong>Marketing Consent:</strong> ${keynoteSpeakerData.agreeToMarketing ? 'Yes' : 'No'}</p>
+          <p><strong>Accommodation Needed:</strong> ${
+            keynoteSpeakerData.accommodationNeeded || "Not specified"
+          }</p>
+          <p><strong>Preferred Session:</strong> ${
+            keynoteSpeakerData.preferredSessionTime || "No preference"
+          }</p>
+          <p><strong>Marketing Consent:</strong> ${
+            keynoteSpeakerData.agreeToMarketing ? "Yes" : "No"
+          }</p>
         </div>
       </div>
       
       <div style="text-align: center; margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
         <p><strong>⚡ Action Required:</strong> Please review this keynote speaker application and update the status accordingly.</p>
-        <p style="color: #666; font-size: 14px;">Speaker ID: ${keynoteSpeakerData.id}</p>
+        <p style="color: #666; font-size: 14px;">Speaker ID: ${
+          keynoteSpeakerData.id
+        }</p>
       </div>
     </div>
   </div>
