@@ -3,6 +3,9 @@ import {
   sendReviewerExpressionStatusEmail, 
   sendReviewerExpressionAdminNotification 
 } from "../services/emailService.js";
+import emailQueue from "../services/emailQueue.js";
+import logger from "../config/logger.js";
+
 /* ------------------------- helpers ------------------------- */
 
 /**
@@ -51,35 +54,6 @@ function extractBodyFromMultipart(req) {
   return req.body || {};
 }
 
-/** capture Cloudinary URL from either .single() or .fields() upload */
-function extractCvUrl(req) {
-  let f = null;
-  if (req.file) f = req.file; // single('cvFile')
-  if (!f && req.files && req.files.cvFile && req.files.cvFile[0]) {
-    f = req.files.cvFile[0]; // fields([{ name:'cvFile' }])
-  }
-  if (!f) return null;
-
-  // multer-storage-cloudinary usually sets .path to the final URL
-  let cvUrl = f.path || f.secure_url || f.url || null;
-
-  // Fallback: reconstruct a URL from public_id (filename) + format if needed
-  if (!cvUrl && f.filename) {
-    const cloud = process.env.CLOUDINARY_CLOUD_NAME;
-    const fmt =
-      f.format ||
-      (f.mimetype === "application/pdf"
-        ? "pdf"
-        : f.mimetype ===
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ? "docx"
-        : (f.originalname && f.originalname.split(".").pop()) || "pdf");
-    // Folder is fixed in the reviewer uploader: cv_reviewer_expression
-    cvUrl = `https://res.cloudinary.com/${cloud}/raw/upload/cv_reviewer_expression/${f.filename}.${fmt}`;
-  }
-  return cvUrl;
-}
-
 /* ------------------------- controllers ------------------------- */
 
 /**
@@ -89,11 +63,23 @@ function extractCvUrl(req) {
  *   - File field: cvFile (pdf/docx) -> Cloudinary folder 'cv_reviewer_expression'
  */
 export const createReviewerExpression = async (req, res) => {
+  const startTime = Date.now();
+  
   try {
+    logger.info('Reviewer expression submission started', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
     let body;
     try {
       body = extractBodyFromMultipart(req);
     } catch (e) {
+      logger.warn('Reviewer expression submission failed - invalid JSON', {
+        error: e.message,
+        ip: req.ip
+      });
+      
       return res.status(400).json({ success: false, message: e.message });
     }
 
@@ -112,6 +98,11 @@ export const createReviewerExpression = async (req, res) => {
     } = body;
 
     if (!name || !currentJobTitle || !institution) {
+      logger.warn('Reviewer expression submission failed - missing required fields', {
+        missingFields: { name: !name, currentJobTitle: !currentJobTitle, institution: !institution },
+        ip: req.ip
+      });
+      
       return res.status(400).json({
         success: false,
         message: "name, currentJobTitle and institution are required",
@@ -134,17 +125,57 @@ export const createReviewerExpression = async (req, res) => {
       cvUrl: null,
     };
 
-    // attach Cloudinary URL if a file was uploaded
-    payload.cvUrl = extractCvUrl(req);
+    // Handle CV file upload if present
+    if (req.file) {
+      // File was uploaded via multer
+      const { uploadToCloudinary } = await import('../services/fileUploadService.js');
+      const uploadResult = await uploadToCloudinary(req.file, 'reviewer', 'cv');
+      
+      if (uploadResult.success) {
+        payload.cvUrl = uploadResult.url;
+        logger.info('CV uploaded successfully', {
+          url: uploadResult.url,
+          size: uploadResult.size
+        });
+      } else {
+        logger.error('CV upload failed', {
+          error: uploadResult.error
+        });
+        return res.status(500).json({
+          success: false,
+          message: 'CV upload failed: ' + uploadResult.error
+        });
+      }
+    }
 
     const created = await prisma.ReviewerExpression.create({ data: payload });
 
-    // Send admin notification email
+    const processingTime = Date.now() - startTime;
+    
+    logger.info('Reviewer expression submission successful', {
+      id: created.id,
+      email: created.email,
+      processingTime: `${processingTime}ms`
+    });
+
+    // Queue admin notification email (non-blocking)
     try {
-      await sendReviewerExpressionAdminNotification(created);
+      await emailQueue.addEmail({
+        to: process.env.ADMIN_EMAIL,
+        from: process.env.BREVO_FROM_EMAIL,
+        fromName: "ICCICT 2026",
+        subject: `New Reviewer Expression: ${created.name}`,
+        html: await sendReviewerExpressionAdminNotification(created)
+      }, 'normal');
+      
+      logger.info('Reviewer expression admin notification queued', {
+        email: created.email
+      });
     } catch (emailError) {
-      console.error("Failed to send admin notification:", emailError);
-      // Don't fail the registration if email fails
+      logger.error('Failed to queue reviewer expression admin notification', {
+        error: emailError.message,
+        email: created.email
+      });
     }
 
     return res.status(201).json({
@@ -153,7 +184,15 @@ export const createReviewerExpression = async (req, res) => {
       data: created,
     });
   } catch (error) {
-    console.error("createReviewerExpression error:", error);
+    const processingTime = Date.now() - startTime;
+    
+    logger.error('Reviewer expression submission error', {
+      error: error.message,
+      stack: error.stack,
+      processingTime: `${processingTime}ms`,
+      ip: req.ip
+    });
+    
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -170,48 +209,14 @@ export const getReviewerExpressionById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Not found" });
     return res.json({ success: true, data: row });
   } catch (error) {
-    console.error("getReviewerExpressionById error:", error);
+    logger.error('Error retrieving reviewer expression by ID', {
+      error: error.message,
+      id: req.params.id
+    });
+    
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-/**
- * PATCH /api/reviewer-expression/:id/status
- * Super Admin only
- * body: { status: "PENDING" | "ACCEPTED" | "REJECTED" }
- */
-// export const updateReviewerExpressionStatus = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { status } = req.body;
-
-//     if (!["PENDING", "ACCEPTED", "REJECTED"].includes(status)) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "Invalid status" });
-//     }
-
-//     const updated = await prisma.ReviewerExpression.update({
-//       where: { id },
-//       data: { status },
-//     });
-
-//     return res.json({
-//       success: true,
-//       message: "Status updated",
-//       data: updated,
-//     });
-//   } catch (error) {
-//     console.error("updateReviewerExpressionStatus error:", error);
-//     if (error.code === "P2025") {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Reviewer record not found" });
-//     }
-//     return res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
-
 
 export const updateReviewerExpressionStatus = async (req, res) => {
   try {
@@ -284,13 +289,33 @@ export const updateReviewerExpressionStatus = async (req, res) => {
       return { updated, committee };
     });
 
-    // Send status notification email
+    // Queue status notification email (non-blocking)
     try {
-      await sendReviewerExpressionStatusEmail(existing, status);
+      await emailQueue.addEmail({
+        to: existing.email,
+        from: process.env.BREVO_FROM_EMAIL,
+        fromName: "ICCICT 2026",
+        subject: `Reviewer Expression Status Update - ${status}`,
+        html: await sendReviewerExpressionStatusEmail(existing, status)
+      }, 'normal');
+      
+      logger.info('Reviewer expression status notification queued', {
+        email: existing.email,
+        status
+      });
     } catch (emailError) {
-      console.error("Failed to send status notification:", emailError);
-      // Don't fail the status update if email fails
+      logger.error('Failed to queue reviewer expression status notification', {
+        error: emailError.message,
+        email: existing.email,
+        status
+      });
     }
+
+    logger.info('Reviewer expression status updated', {
+      id,
+      status,
+      email: existing.email
+    });
 
     return res.json({
       success: true,
@@ -313,15 +338,18 @@ export const updateReviewerExpressionStatus = async (req, res) => {
         : null,
     });
   } catch (error) {
-    console.error("updateReviewerExpressionStatus error:", error);
+    logger.error('Error updating reviewer expression status', {
+      error: error.message,
+      id: req.params.id,
+      status: req.body.status
+    });
+    
     if (error.code === "P2025") {
       return res.status(404).json({ success: false, message: "Reviewer record not found" });
     }
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-
 
 /**
  * DELETE /api/reviewer-expression/:id
@@ -331,9 +359,18 @@ export const deleteReviewerExpression = async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.ReviewerExpression.delete({ where: { id } });
+    
+    logger.info('Reviewer expression deleted', {
+      id
+    });
+    
     return res.json({ success: true, message: "Reviewer record deleted" });
   } catch (error) {
-    console.error("deleteReviewerExpression error:", error);
+    logger.error('Error deleting reviewer expression', {
+      error: error.message,
+      id: req.params.id
+    });
+    
     if (error.code === "P2025") {
       return res.status(404).json({ success: false, message: "Not found" });
     }
@@ -352,39 +389,11 @@ export const getAllFormFilled = async (req, res) => {
       data: rows,
     });
   } catch (error) {
-    console.error("getAllFormFilled error:", error);
+    logger.error('Error retrieving all reviewer expressions', {
+      error: error.message,
+      stack: error.stack
+    });
+    
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
-/**
- * GET /api/reviewer-expression
- * Super Admin only — list with optional ?status=PENDING|ACCEPTED|REJECTED&page=&limit=
- */
-// export const listReviewerExpressions = async (req, res) => {
-//   try {
-//     const { status, page = 1, limit = 20 } = req.query;
-//     const take = Math.min(parseInt(limit, 10) || 20, 100);
-//     const skip = (Math.max(parseInt(page, 10) || 1, 1) - 1) * take;
-
-//     const where = {};
-//     if (status && ["PENDING", "ACCEPTED", "REJECTED"].includes(status)) {
-//       where.status = status;
-//     }
-
-//     const [items, total] = await Promise.all([
-//       prisma.ReviewerExpression.findMany({
-//         where,
-//         orderBy: { createdAt: "desc" },
-//         skip,
-//         take,
-//       }),
-//       prisma.ReviewerExpression.count({ where }),
-//     ]);
-
-//     return res.json({ success: true, data: items, total, page: Number(page), limit: take });
-//   } catch (error) {
-//     console.error("listReviewerExpressions error:", error);
-//     return res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };

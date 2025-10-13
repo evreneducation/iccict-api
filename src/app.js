@@ -8,12 +8,15 @@ import conferenceRegistrationRoutes from './routes/conferenceRegistrationRoutes.
 import speakerRoutes from './routes/speakerRoutes.js';
 import keynoteSpeakerRoutes from './routes/keynoteSpeakerRoutes.js';
 import reviewingCommitteeRoutes from './routes/reviewingCommitteeRoutes.js';
-import { connectDB } from './config/db.js';
+import { connectDB, disconnectDB } from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import contactRoutes from './routes/contact.js';
 import reviewerExpressionRoutes from "./routes/reviewerExpressionRoutes.js";
+import fileUploadRoutes from './routes/fileUploadRoutes.js';
+import healthRoutes from './routes/healthRoutes.js';
 import { startReviewReminderJob } from './jobs/reviewReminderJob.js';
+import logger from './config/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,10 +25,11 @@ dotenv.config();
 
 const app = express();
 
+// Enhanced timeout configuration
 app.use((req, res, next) => {
-  // Set timeout to 30 seconds for all requests
-  req.setTimeout(30000);
-  res.setTimeout(30000);
+  // Set timeout to 60 seconds for all requests (increased from 30)
+  req.setTimeout(60000);
+  res.setTimeout(60000);
   next();
 });
 
@@ -36,8 +40,8 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
   credentials: true,
   optionsSuccessStatus: 200,
-  preflightContinue: false, // Don't continue to next middleware for preflight
-  maxAge: 86400 // Cache preflight for 24 hours
+  preflightContinue: false,
+  maxAge: 86400
 }));
 
 // Explicit OPTIONS handler for faster preflight responses
@@ -49,9 +53,27 @@ app.options('*', (req, res) => {
   res.sendStatus(200);
 });
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info('HTTP Request', {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${duration}ms`,
+      userAgent: req.get('User-Agent'),
+      ip: req.ip
+    });
+  });
+  
+  next();
+});
 
 // Connect to database
 connectDB();
@@ -71,10 +93,19 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
 app.use("/api/reviewer-expression", reviewerExpressionRoutes);
+app.use('/api/upload', fileUploadRoutes);
+app.use('/api/health', healthRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error('Unhandled error', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip
+  });
+  
   res.status(500).json({
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined,
@@ -82,8 +113,25 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  logger.info('SIGTERM received, shutting down gracefully');
+  await disconnectDB();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  logger.info('SIGINT received, shutting down gracefully');
+  await disconnectDB();
+  process.exit(0);
+});
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    logger.info(`Server is running on port ${PORT}`, {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version
+    });
 });

@@ -1,5 +1,7 @@
 import { prisma } from "../config/db.js";
 import { sendKeynoteSpeakerRegistrationEmail } from "../services/emailService.js";
+import emailQueue from "../services/emailQueue.js";
+import logger from "../config/logger.js";
 
 // Validation functions
 const validateEmail = (email) => {
@@ -12,53 +14,18 @@ const validatePhone = (phone) => {
   return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
 };
 
-// const validateExpertiseArea = (area) => {
-//   const validAreas = [
-//     'Mathematics', 'Management', 'Computer Science', 'Data Science',
-//     'Artificial Intelligence', 'Operations Research', 'Statistics',
-//     'Information Systems', 'Business Analytics', 'Other'
-//   ];
-//   return validAreas.includes(area);
-// };
-
 export const registerKeynoteSpeaker = async (req, res) => {
+  const startTime = Date.now();
+  
   try {
+    logger.info('Keynote speaker registration started', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
     const speakerData = req.body;
     const { referralCode } = speakerData;
     
-    // Handle file uploads if files were uploaded
-    let fileUrls = {
-      cvFileUrl: null,
-      photoFileUrl: null,
-      presentationFileUrl: null
-    };
-    
-    if (req.files) {
-      if (req.files.cvFile) {
-        fileUrls.cvFileUrl = req.files.cvFile[0].path; // Cloudinary URL
-      }
-      if (req.files.photoFile) {
-        fileUrls.photoFileUrl = req.files.photoFile[0].path;
-      }
-      if (req.files.presentationFile) {
-        fileUrls.presentationFileUrl = req.files.presentationFile[0].path;
-      }
-    }
-
-    // If referral code is provided, verify it exists
-    if (referralCode) {
-      const admin = await prisma.Admin.findUnique({
-        where: { referralCode }
-      });
-
-      if (!admin) {
-        return res.status(400).json({ 
-          message: 'Invalid referral code',
-          success: false 
-        });
-      }
-    }
-
     // Validate required fields
     const requiredFields = [
       'name', 'email', 'phone', 'country', 'designation', 'institutionName',
@@ -69,6 +36,11 @@ export const registerKeynoteSpeaker = async (req, res) => {
     const missingFields = requiredFields.filter(field => !speakerData[field]);
     
     if (missingFields.length > 0) {
+      logger.warn('Keynote speaker registration failed - missing fields', {
+        missingFields,
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: `Missing required fields: ${missingFields.join(', ')}`,
         success: false
@@ -77,6 +49,10 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     // Validate email format
     if (!validateEmail(speakerData.email)) {
+      logger.warn('Keynote speaker registration failed - invalid email', {
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "Invalid email format",
         success: false
@@ -85,22 +61,24 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     // Validate phone format
     if (!validatePhone(speakerData.phone)) {
+      logger.warn('Keynote speaker registration failed - invalid phone', {
+        phone: speakerData.phone,
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "Invalid phone number format",
         success: false
       });
     }
 
-    // Validate expertise area
-    // if (!validateExpertiseArea(speakerData.expertiseArea)) {
-    //   return res.status(400).json({
-    //     message: "Invalid expertise area selection",
-    //     success: false
-    //   });
-    // }
-
     // Validate abstract length
     if (speakerData.keynoteAbstract.length < 100) {
+      logger.warn('Keynote speaker registration failed - abstract too short', {
+        abstractLength: speakerData.keynoteAbstract.length,
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "Keynote abstract must be at least 100 characters long",
         success: false
@@ -110,24 +88,13 @@ export const registerKeynoteSpeaker = async (req, res) => {
     // Validate experience years
     const experienceYears = parseInt(speakerData.experienceYears);
     if (isNaN(experienceYears) || experienceYears < 0) {
+      logger.warn('Keynote speaker registration failed - invalid experience years', {
+        experienceYears: speakerData.experienceYears,
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "Experience years must be a valid number",
-        success: false
-      });
-    }
-
-    // Validate publications count if provided
-    if (speakerData.publicationsCount && parseInt(speakerData.publicationsCount) < 0) {
-      return res.status(400).json({
-        message: "Publications count must be a positive number",
-        success: false
-      });
-    }
-
-    // Validate keynote experience if provided
-    if (speakerData.keynoteExperience && parseInt(speakerData.keynoteExperience) < 0) {
-      return res.status(400).json({
-        message: "Keynote experience must be a positive number",
         success: false
       });
     }
@@ -138,6 +105,10 @@ export const registerKeynoteSpeaker = async (req, res) => {
     });
 
     if (existingKeynoteSpeaker) {
+      logger.warn('Keynote speaker registration failed - email already exists', {
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "A keynote speaker is already registered with this email address",
         success: false
@@ -146,10 +117,35 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     // Validate terms agreement
     if (!speakerData.agreeToTerms || speakerData.agreeToTerms !== 'on') {
+      logger.warn('Keynote speaker registration failed - terms not agreed', {
+        email: speakerData.email
+      });
+      
       return res.status(400).json({
         message: "You must agree to the terms and conditions",
         success: false
       });
+    }
+
+    // If referral code is provided, verify it exists
+    let referredById = null;
+    if (referralCode) {
+      const admin = await prisma.Admin.findUnique({
+        where: { referralCode }
+      });
+
+      if (!admin) {
+        logger.warn('Keynote speaker registration failed - invalid referral code', {
+          referralCode,
+          email: speakerData.email
+        });
+        
+        return res.status(400).json({ 
+          message: 'Invalid referral code',
+          success: false 
+        });
+      }
+      referredById = admin.id;
     }
 
     // Prepare data for database
@@ -189,8 +185,10 @@ export const registerKeynoteSpeaker = async (req, res) => {
       orcidId: speakerData.orcidId || null,
       googleScholar: speakerData.googleScholar || null,
       
-      // Files
-      ...fileUrls,
+      // File URLs (now passed from frontend)
+      cvFileUrl: speakerData.cvFileUrl || null,
+      photoFileUrl: speakerData.photoFileUrl || null,
+      presentationFileUrl: speakerData.presentationFileUrl || null,
       
       // Additional Information
       preferredSessionTime: speakerData.preferredSessionTime || null,
@@ -204,20 +202,20 @@ export const registerKeynoteSpeaker = async (req, res) => {
       
       // Referral
       referralCode: referralCode || null,
-      referredById: null
+      referredById: referredById
     };
-
-    // If referral code exists, set the referred by admin
-    if (referralCode) {
-      const admin = await prisma.Admin.findUnique({
-        where: { referralCode: referralCode }
-      });
-      keynoteData.referredById = admin.id;
-    }
 
     // Create new keynote speaker
     const newKeynoteSpeaker = await prisma.keynoteSpeaker.create({
       data: keynoteData,
+    });
+
+    const processingTime = Date.now() - startTime;
+    
+    logger.info('Keynote speaker registration successful', {
+      id: newKeynoteSpeaker.id,
+      email: newKeynoteSpeaker.email,
+      processingTime: `${processingTime}ms`
     });
 
     res.status(201).json({
@@ -232,16 +230,36 @@ export const registerKeynoteSpeaker = async (req, res) => {
       success: true,
     });
 
-    // Send registration confirmation emails
+    // Queue email sending (non-blocking)
     try {
-      await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker);
+      await emailQueue.addEmail({
+        to: newKeynoteSpeaker.email,
+        from: process.env.BREVO_FROM_EMAIL,
+        fromName: "ICCICT 2026",
+        subject: "ICCICT 2026 | Keynote Speaker Registration Confirmation",
+        html: await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker)
+      }, 'high');
+      
+      logger.info('Keynote speaker confirmation email queued', {
+        email: newKeynoteSpeaker.email
+      });
     } catch (emailError) {
-      console.error('Email service error:', emailError);
-      // Don't fail the registration if email fails
+      logger.error('Failed to queue keynote speaker email', {
+        error: emailError.message,
+        email: newKeynoteSpeaker.email
+      });
     }
 
   } catch (error) {
-    console.error('Keynote speaker registration error:', error);
+    const processingTime = Date.now() - startTime;
+    
+    logger.error('Keynote speaker registration error', {
+      error: error.message,
+      stack: error.stack,
+      processingTime: `${processingTime}ms`,
+      ip: req.ip
+    });
+    
     res.status(500).json({
       message: "Error registering keynote speaker. Please try again.",
       error: error.message,
@@ -250,6 +268,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
   }
 };
 
+// ... rest of the existing functions remain the same
 export const getKeynoteSpeakers = async (req, res) => {
   try {
     const keynoteSpeakers = await prisma.keynoteSpeaker.findMany({
@@ -274,7 +293,11 @@ export const getKeynoteSpeakers = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Error retrieving keynote speakers:', error);
+    logger.error('Error retrieving keynote speakers', {
+      error: error.message,
+      stack: error.stack
+    });
+    
     res.status(500).json({ 
       message: 'Error retrieving keynote speakers', 
       error: error.message,
@@ -311,7 +334,11 @@ export const getKeynoteSpeakerById = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Error retrieving keynote speaker:', error);
+    logger.error('Error retrieving keynote speaker', {
+      error: error.message,
+      id: req.params.id
+    });
+    
     res.status(500).json({
       message: 'Error retrieving keynote speaker',
       error: error.message,
@@ -345,13 +372,24 @@ export const updateKeynoteSpeakerStatus = async (req, res) => {
       }
     });
 
+    logger.info('Keynote speaker status updated', {
+      id,
+      status,
+      email: updatedKeynoteSpeaker.email
+    });
+
     res.status(200).json({
       message: 'Keynote speaker status updated successfully',
       keynoteSpeaker: updatedKeynoteSpeaker,
       success: true
     });
   } catch (error) {
-    console.error('Error updating keynote speaker status:', error);
+    logger.error('Error updating keynote speaker status', {
+      error: error.message,
+      id: req.params.id,
+      status: req.body.status
+    });
+    
     res.status(500).json({
       message: 'Error updating keynote speaker status',
       error: error.message,
@@ -359,8 +397,6 @@ export const updateKeynoteSpeakerStatus = async (req, res) => {
     });
   }
 };
-
-// Admin-specific functions for managing keynote speakers
 
 export const getAllKeynoteSpeakersForAdmin = async (req, res) => {
   try {
@@ -420,7 +456,11 @@ export const getAllKeynoteSpeakersForAdmin = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Error retrieving keynote speakers for admin:', error);
+    logger.error('Error retrieving keynote speakers for admin', {
+      error: error.message,
+      stack: error.stack
+    });
+    
     res.status(500).json({ 
       message: 'Error retrieving keynote speakers', 
       error: error.message,
@@ -501,6 +541,11 @@ export const updateKeynoteSpeakerByAdmin = async (req, res) => {
       }
     });
 
+    logger.info('Keynote speaker updated by admin', {
+      id,
+      email: updatedKeynoteSpeaker.email
+    });
+
     res.status(200).json({
       message: 'Keynote speaker updated successfully',
       keynoteSpeaker: updatedKeynoteSpeaker,
@@ -514,7 +559,11 @@ export const updateKeynoteSpeakerByAdmin = async (req, res) => {
       });
     }
     
-    console.error('Error updating keynote speaker:', error);
+    logger.error('Error updating keynote speaker', {
+      error: error.message,
+      id: req.params.id
+    });
+    
     res.status(500).json({
       message: 'Error updating keynote speaker',
       error: error.message,
@@ -537,6 +586,11 @@ export const deleteKeynoteSpeaker = async (req, res) => {
       }
     });
 
+    logger.info('Keynote speaker deleted', {
+      id,
+      email: deletedKeynoteSpeaker.email
+    });
+
     res.status(200).json({
       message: 'Keynote speaker deleted successfully',
       keynoteSpeaker: deletedKeynoteSpeaker,
@@ -550,7 +604,11 @@ export const deleteKeynoteSpeaker = async (req, res) => {
       });
     }
     
-    console.error('Error deleting keynote speaker:', error);
+    logger.error('Error deleting keynote speaker', {
+      error: error.message,
+      id: req.params.id
+    });
+    
     res.status(500).json({
       message: 'Error deleting keynote speaker',
       error: error.message,
@@ -581,11 +639,15 @@ export const getKeynoteSpeakerStatsForAdmin = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Error retrieving keynote speaker stats:', error);
+    logger.error('Error retrieving keynote speaker stats', {
+      error: error.message,
+      stack: error.stack
+    });
+    
     res.status(500).json({
       message: 'Error retrieving keynote speaker statistics',
       error: error.message,
       success: false
     });
   }
-}; 
+};
