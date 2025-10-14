@@ -1,7 +1,7 @@
 import { prisma } from "../config/db.js";
-import { 
-  sendReviewerExpressionStatusEmail, 
-  sendReviewerExpressionAdminNotification 
+import {
+  sendReviewerExpressionStatusEmail,
+  sendReviewerExpressionAdminNotification,
 } from "../services/emailService.js";
 import emailQueue from "../services/emailQueue.js";
 import logger from "../config/logger.js";
@@ -64,11 +64,11 @@ function extractBodyFromMultipart(req) {
  */
 export const createReviewerExpression = async (req, res) => {
   const startTime = Date.now();
-  
+
   try {
-    logger.info('Reviewer expression submission started', {
+    logger.info("Reviewer expression submission started", {
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get("User-Agent"),
     });
 
     const {
@@ -83,15 +83,22 @@ export const createReviewerExpression = async (req, res) => {
       researchInterest,
       previousPeerReviewExperience,
       conflictOfInterest,
-      cvUrl // Now expecting URL instead of file
+      cvUrl, // Now expecting URL instead of file
     } = req.body;
 
     if (!name || !currentJobTitle || !institution) {
-      logger.warn('Reviewer expression submission failed - missing required fields', {
-        missingFields: { name: !name, currentJobTitle: !currentJobTitle, institution: !institution },
-        ip: req.ip
-      });
-      
+      logger.warn(
+        "Reviewer expression submission failed - missing required fields",
+        {
+          missingFields: {
+            name: !name,
+            currentJobTitle: !currentJobTitle,
+            institution: !institution,
+          },
+          ip: req.ip,
+        }
+      );
+
       return res.status(400).json({
         success: false,
         message: "name, currentJobTitle and institution are required",
@@ -117,35 +124,41 @@ export const createReviewerExpression = async (req, res) => {
     const created = await prisma.ReviewerExpression.create({ data: payload });
 
     const processingTime = Date.now() - startTime;
-    
-    logger.info('Reviewer expression submission successful', {
+
+    logger.info("Reviewer expression submission successful", {
       id: created.id,
       email: created.email,
-      processingTime: `${processingTime}ms`
+      processingTime: `${processingTime}ms`,
     });
 
     // Queue admin notification email (non-blocking)
-    emailQueue.addEmail('sendReviewerExpressionNotification', {
-      reviewer: created
-    });
+    await emailQueue.addEmail(
+      {
+        to: created.email,
+        from: process.env.BREVO_FROM_EMAIL,
+        fromName: "ICCICT 2026",
+        subject: `New Reviewer Expression: ${created.name}`,
+        html: await sendReviewerExpressionAdminNotification(created),
+      },
+      "normal"
+    );
 
     res.status(201).json({
       success: true,
       message: "Reviewer expression submitted successfully",
-      data: created
+      data: created,
     });
-
   } catch (error) {
-    logger.error('Reviewer expression submission error', {
+    logger.error("Reviewer expression submission error", {
       error: error.message,
       email: req.body?.email,
-      stack: error.stack
+      stack: error.stack,
     });
 
     res.status(500).json({
       success: false,
       message: "Error submitting reviewer expression",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -162,11 +175,11 @@ export const getReviewerExpressionById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Not found" });
     return res.json({ success: true, data: row });
   } catch (error) {
-    logger.error('Error retrieving reviewer expression by ID', {
+    logger.error("Error retrieving reviewer expression by ID", {
       error: error.message,
-      id: req.params.id
+      id: req.params.id,
     });
-    
+
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -178,20 +191,27 @@ export const updateReviewerExpressionStatus = async (req, res) => {
 
     const VALID = ["PENDING", "ACCEPTED", "REJECTED"];
     if (!VALID.includes(status)) {
-      return res.status(400).json({ success: false, message: "Invalid status" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status" });
     }
 
     // We need existing data to sync on ACCEPTED
-    const existing = await prisma.ReviewerExpression.findUnique({ where: { id } });
+    const existing = await prisma.ReviewerExpression.findUnique({
+      where: { id },
+    });
     if (!existing) {
-      return res.status(404).json({ success: false, message: "Reviewer record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Reviewer record not found" });
     }
 
     // subjectArea (Json) -> string for ReviewingCommittee.expertise
     const toExpertiseString = (v) => {
       if (Array.isArray(v)) return v.filter(Boolean).join(", ");
       if (typeof v === "string") return v.trim();
-      if (v && typeof v === "object") return Object.values(v).filter(Boolean).join(", ");
+      if (v && typeof v === "object")
+        return Object.values(v).filter(Boolean).join(", ");
       return "";
     };
 
@@ -200,7 +220,12 @@ export const updateReviewerExpressionStatus = async (req, res) => {
 
     const adminId = req.admin?.id; // set by requireSuperAdmin
     if (status === "ACCEPTED" && !adminId) {
-      return res.status(500).json({ success: false, message: "Admin context missing (createdBy required)" });
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "Admin context missing (createdBy required)",
+        });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -223,7 +248,7 @@ export const updateReviewerExpressionStatus = async (req, res) => {
               designation: existing.currentJobTitle,
               institution: existing.institution,
               expertise: toExpertiseString(existing.subjectArea),
-              phone: normPhone(existing.phone),     // ← now defined
+              phone: normPhone(existing.phone), // ← now defined
               isActive: true,
               createdBy: adminId,
             },
@@ -232,7 +257,7 @@ export const updateReviewerExpressionStatus = async (req, res) => {
               designation: existing.currentJobTitle,
               institution: existing.institution,
               expertise: toExpertiseString(existing.subjectArea),
-              phone: normPhone(existing.phone),     // ← now defined
+              phone: normPhone(existing.phone), // ← now defined
               isActive: true,
             },
           });
@@ -244,30 +269,33 @@ export const updateReviewerExpressionStatus = async (req, res) => {
 
     // Queue status notification email (non-blocking)
     try {
-      await emailQueue.addEmail({
-        to: existing.email,
-        from: process.env.BREVO_FROM_EMAIL,
-        fromName: "ICCICT 2026",
-        subject: `Reviewer Expression Status Update - ${status}`,
-        html: await sendReviewerExpressionStatusEmail(existing, status)
-      }, 'normal');
-      
-      logger.info('Reviewer expression status notification queued', {
+      await emailQueue.addEmail(
+        {
+          to: existing.email,
+          from: process.env.BREVO_FROM_EMAIL,
+          fromName: "ICCICT 2026",
+          subject: `Reviewer Expression Status Update - ${status}`,
+          html: await sendReviewerExpressionStatusEmail(existing, status),
+        },
+        "normal"
+      );
+
+      logger.info("Reviewer expression status notification queued", {
         email: existing.email,
-        status
+        status,
       });
     } catch (emailError) {
-      logger.error('Failed to queue reviewer expression status notification', {
+      logger.error("Failed to queue reviewer expression status notification", {
         error: emailError.message,
         email: existing.email,
-        status
+        status,
       });
     }
 
-    logger.info('Reviewer expression status updated', {
+    logger.info("Reviewer expression status updated", {
       id,
       status,
-      email: existing.email
+      email: existing.email,
     });
 
     return res.json({
@@ -291,14 +319,16 @@ export const updateReviewerExpressionStatus = async (req, res) => {
         : null,
     });
   } catch (error) {
-    logger.error('Error updating reviewer expression status', {
+    logger.error("Error updating reviewer expression status", {
       error: error.message,
       id: req.params.id,
-      status: req.body.status
+      status: req.body.status,
     });
-    
+
     if (error.code === "P2025") {
-      return res.status(404).json({ success: false, message: "Reviewer record not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Reviewer record not found" });
     }
     return res.status(500).json({ success: false, message: "Server error" });
   }
@@ -312,18 +342,18 @@ export const deleteReviewerExpression = async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.ReviewerExpression.delete({ where: { id } });
-    
-    logger.info('Reviewer expression deleted', {
-      id
+
+    logger.info("Reviewer expression deleted", {
+      id,
     });
-    
+
     return res.json({ success: true, message: "Reviewer record deleted" });
   } catch (error) {
-    logger.error('Error deleting reviewer expression', {
+    logger.error("Error deleting reviewer expression", {
       error: error.message,
-      id: req.params.id
+      id: req.params.id,
     });
-    
+
     if (error.code === "P2025") {
       return res.status(404).json({ success: false, message: "Not found" });
     }
@@ -342,11 +372,11 @@ export const getAllFormFilled = async (req, res) => {
       data: rows,
     });
   } catch (error) {
-    logger.error('Error retrieving all reviewer expressions', {
+    logger.error("Error retrieving all reviewer expressions", {
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
-    
+
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
