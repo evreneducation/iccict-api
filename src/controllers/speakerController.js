@@ -65,30 +65,11 @@ export const registerSpeaker = async (req, res) => {
     // --------------------------
     // Handle file uploads (yours)
     // --------------------------
-    let paperFileUrl = null;
-    let supplementaryFileUrl = null;
-    let paperDocxUrl = null;
-    let zipFolderUrl = null;
-    let sourceCodeFileUrl = null;
-
-    if (req.files) {
-      if (req.files.paperFile) {
-        paperFileUrl = req.files.paperFile[0].path; // PDF
-      }
-      if (req.files.paperDocxFile) {
-        paperDocxUrl = req.files.paperDocxFile[0].path; // DOCX
-      }
-      if (req.files.zipFolderFile) {
-        zipFolderUrl = req.files.zipFolderFile[0].path; // ZIP
-      }
-      if (req.files.supplementaryFile) {
-        supplementaryFileUrl = req.files.supplementaryFile[0].path;
-      }
-      if (req.files.sourceCodeFile) {
-        sourceCodeFileUrl = req.files.sourceCodeFile[0].path;
-      }
-    }
-
+    const paperFileUrl = speakerData.paperFileUrl || null;
+    const supplementaryFileUrl = speakerData.supplementaryFileUrl || null;
+    const paperDocxUrl = speakerData.paperDocxUrl || null;
+    const zipFolderUrl = speakerData.zipFolderUrl || null;
+    const sourceCodeFileUrl = speakerData.sourceCodeFileUrl || null;
 
     // Biography validation
     if (speakerData.authorBiography) {
@@ -195,7 +176,7 @@ export const registerSpeaker = async (req, res) => {
     // Co-authors JSON validation
     // -----------------------------
     let coAuthors = [];
-    if (speakerData.coAuthors) {
+    if (speakerData.coAuthors.length > 0) {
       try {
         coAuthors = JSON.parse(speakerData.coAuthors);
         for (let i = 0; i < coAuthors.length; i++) {
@@ -271,7 +252,7 @@ export const registerSpeaker = async (req, res) => {
 
       // Subject Areas
       primarySubject: speakerData.primarySubject,
-      additionalSubjects: speakerData.additionalSubjects || null,
+      additionalSubjects: speakerData.additionalSubjects.length > 0 ? JSON.stringify(speakerData.additionalSubjects) : null,
 
       // File Uploads
       paperFileUrl,

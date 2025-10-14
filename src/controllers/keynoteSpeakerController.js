@@ -148,7 +148,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
       referredById = admin.id;
     }
 
-    // Prepare data for database
+    // Prepare data for database - now expecting URLs instead of files
     const keynoteData = {
       // Personal Information
       name: speakerData.name,
@@ -197,17 +197,16 @@ export const registerKeynoteSpeaker = async (req, res) => {
       additionalComments: speakerData.additionalComments || null,
       
       // Agreements
-      agreeToTerms: true,
-      agreeToMarketing: speakerData.agreeToMarketing === 'on' || false,
+      agreeToTerms: speakerData.agreeToTerms === 'on',
+      agreeToDataProcessing: speakerData.agreeToDataProcessing === 'on',
       
       // Referral
-      referralCode: referralCode || null,
       referredById: referredById
     };
 
-    // Create new keynote speaker
+    // Create keynote speaker record
     const newKeynoteSpeaker = await prisma.keynoteSpeaker.create({
-      data: keynoteData,
+      data: keynoteData
     });
 
     const processingTime = Date.now() - startTime;
@@ -218,52 +217,28 @@ export const registerKeynoteSpeaker = async (req, res) => {
       processingTime: `${processingTime}ms`
     });
 
-    res.status(201).json({
-      message: "Keynote speaker registration successful! We will review your proposal and get back to you within 10 business days.",
-      keynoteSpeaker: {
-        id: newKeynoteSpeaker.id,
-        name: newKeynoteSpeaker.name,
-        email: newKeynoteSpeaker.email,
-        keynoteTitle: newKeynoteSpeaker.keynoteTitle,
-        status: newKeynoteSpeaker.status
-      },
-      success: true,
+    // Queue confirmation email (non-blocking)
+    emailQueue.addEmail('sendKeynoteSpeakerConfirmation', {
+      speaker: newKeynoteSpeaker
     });
 
-    // Queue email sending (non-blocking)
-    try {
-      await emailQueue.addEmail({
-        to: newKeynoteSpeaker.email,
-        from: process.env.BREVO_FROM_EMAIL,
-        fromName: "ICCICT 2026",
-        subject: "ICCICT 2026 | Keynote Speaker Registration Confirmation",
-        html: await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker)
-      }, 'high');
-      
-      logger.info('Keynote speaker confirmation email queued', {
-        email: newKeynoteSpeaker.email
-      });
-    } catch (emailError) {
-      logger.error('Failed to queue keynote speaker email', {
-        error: emailError.message,
-        email: newKeynoteSpeaker.email
-      });
-    }
+    res.status(201).json({
+      message: "Keynote speaker registered successfully",
+      speaker: newKeynoteSpeaker,
+      success: true
+    });
 
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
     logger.error('Keynote speaker registration error', {
       error: error.message,
-      stack: error.stack,
-      processingTime: `${processingTime}ms`,
-      ip: req.ip
+      email: speakerData?.email,
+      stack: error.stack
     });
-    
+
     res.status(500).json({
-      message: "Error registering keynote speaker. Please try again.",
+      message: "Error registering keynote speaker",
       error: error.message,
-      success: false,
+      success: false
     });
   }
 };

@@ -71,18 +71,6 @@ export const createReviewerExpression = async (req, res) => {
       userAgent: req.get('User-Agent')
     });
 
-    let body;
-    try {
-      body = extractBodyFromMultipart(req);
-    } catch (e) {
-      logger.warn('Reviewer expression submission failed - invalid JSON', {
-        error: e.message,
-        ip: req.ip
-      });
-      
-      return res.status(400).json({ success: false, message: e.message });
-    }
-
     const {
       name,
       email,
@@ -95,7 +83,8 @@ export const createReviewerExpression = async (req, res) => {
       researchInterest,
       previousPeerReviewExperience,
       conflictOfInterest,
-    } = body;
+      cvUrl // Now expecting URL instead of file
+    } = req.body;
 
     if (!name || !currentJobTitle || !institution) {
       logger.warn('Reviewer expression submission failed - missing required fields', {
@@ -121,32 +110,9 @@ export const createReviewerExpression = async (req, res) => {
       researchInterest: parseSmartArray(researchInterest),
       previousPeerReviewExperience: previousPeerReviewExperience || null,
       conflictOfInterest: conflictOfInterest || null,
+      cvUrl: cvUrl || null, // Now using URL directly
       status: "PENDING",
-      cvUrl: null,
     };
-
-    // Handle CV file upload if present
-    if (req.file) {
-      // File was uploaded via multer
-      const { uploadToCloudinary } = await import('../services/fileUploadService.js');
-      const uploadResult = await uploadToCloudinary(req.file, 'reviewer', 'cv');
-      
-      if (uploadResult.success) {
-        payload.cvUrl = uploadResult.url;
-        logger.info('CV uploaded successfully', {
-          url: uploadResult.url,
-          size: uploadResult.size
-        });
-      } else {
-        logger.error('CV upload failed', {
-          error: uploadResult.error
-        });
-        return res.status(500).json({
-          success: false,
-          message: 'CV upload failed: ' + uploadResult.error
-        });
-      }
-    }
 
     const created = await prisma.ReviewerExpression.create({ data: payload });
 
@@ -159,41 +125,28 @@ export const createReviewerExpression = async (req, res) => {
     });
 
     // Queue admin notification email (non-blocking)
-    try {
-      await emailQueue.addEmail({
-        to: process.env.ADMIN_EMAIL,
-        from: process.env.BREVO_FROM_EMAIL,
-        fromName: "ICCICT 2026",
-        subject: `New Reviewer Expression: ${created.name}`,
-        html: await sendReviewerExpressionAdminNotification(created)
-      }, 'normal');
-      
-      logger.info('Reviewer expression admin notification queued', {
-        email: created.email
-      });
-    } catch (emailError) {
-      logger.error('Failed to queue reviewer expression admin notification', {
-        error: emailError.message,
-        email: created.email
-      });
-    }
+    emailQueue.addEmail('sendReviewerExpressionNotification', {
+      reviewer: created
+    });
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Reviewer expression submitted successfully",
-      data: created,
+      data: created
     });
+
   } catch (error) {
-    const processingTime = Date.now() - startTime;
-    
     logger.error('Reviewer expression submission error', {
       error: error.message,
-      stack: error.stack,
-      processingTime: `${processingTime}ms`,
-      ip: req.ip
+      email: req.body?.email,
+      stack: error.stack
     });
-    
-    return res.status(500).json({ success: false, message: "Server error" });
+
+    res.status(500).json({
+      success: false,
+      message: "Error submitting reviewer expression",
+      error: error.message
+    });
   }
 };
 
