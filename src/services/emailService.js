@@ -111,7 +111,7 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
     from: process.env.BREVO_FROM_EMAIL,
     fromName: "ICCICT 2026",
     to: speakerData.email,
-    subject: "ICCICT 2026 | Speaker Registration Confirmation",
+    subject: "ICCICT 2026 | Paper Submission Confirmation",
     html: speakerConfirmationTemplate(speakerData),
   };
 
@@ -645,7 +645,7 @@ const keynoteSpeakerConfirmationTemplate = (keynoteSpeakerData) => `
         <p>For any questions or updates regarding your keynote speaker application, please contact us at:</p>
         <ul>
           <li>Email: info@ICCICT.org</li>
-          <li>Phone: +91-9540111207/ +91-9540111307</li>
+          <li>Phone: +91-9540111207</li>
         </ul>
       </div>
       
@@ -891,7 +891,7 @@ const speakerReviewCommitteeTemplate = (speakerData, committeeMember) => `
         <p>If you have any questions about this review or need additional information, please contact:</p>
         <ul>
           <li><strong>Conference Email:</strong> info@ICCICT.org</li>
-          <li><strong>Phone:</strong> +91-9540111207/ +91-9540111307</li>
+          <li><strong>Phone:</strong> +91-9540111207</li>
           <li><strong>Review Deadline:</strong> Please provide your feedback within 72 hour</li>
         </ul>
       </div>

@@ -35,13 +35,13 @@ export const welcomeTemplate = (userData) => `
         <p><strong>Email:</strong> ${userData.email}</p>
         <p><strong>Phone:</strong> ${userData.phone}</p>
         <p><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
-        <p><strong>Paper ID:</strong> ${userData.paperId || 'N/A'}</p>
+        <!--<p><strong>Paper ID:</strong> ${userData.paperId || 'N/A'}</p>
         <p><strong>Transaction ID:</strong> ${userData.transactionId || 'N/A'}</p>
         ${
           userData.uploadPaymentReceipt
             ? `<p><strong>Payment Receipt:</strong> <a href="${userData.uploadPaymentReceipt}" target="_blank">📎 View Receipt</a></p>`
             : ''
-        }
+        }-->
       </div>
       
       <div class="info-section">
@@ -68,7 +68,7 @@ export const welcomeTemplate = (userData) => `
         <p>For any questions or assistance, please contact us at:</p>
         <ul>
           <li>Email: info@iccict.org</li>
-          <li>Phone: +91-9540111207 / +91-9540111307</li>
+          <li>Phone: +91-9540111207 </li>
         </ul>
       </div>
       
@@ -264,7 +264,7 @@ export const speakerConfirmationTemplate = (speakerData) => `
         <p>For any questions about your submission, please contact us at:</p>
         <ul>
           <li>Email: info@iccict.org</li>
-          <li>Phone: +91-9540111207/ +91-9540111307</li>
+          <li>Phone: +91-9540111207</li>
         </ul>
       </div>
       
@@ -468,9 +468,8 @@ export const sponsorConfirmationTemplate = (sponsorData) => `
         <h3>📧 Partnership Contact</h3>
         <p>For sponsorship-related queries and coordination:</p>
         <ul>
-          <li>Email: partnerships@iccict.org</li>
-          <li>General: info@iccict.org</li>
-          <li>Phone: +91-9540111207/ +91-9540111307</li>
+          <li>Email: info@iccict.org</li>
+          <li>Phone: +91-9540111207</li>
         </ul>
       </div>
       

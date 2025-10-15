@@ -260,8 +260,8 @@ export const registerKeynoteSpeaker = async (req, res) => {
         to: process.env.ADMIN_EMAIL,
         from: process.env.BREVO_FROM_EMAIL,
         fromName: "ICCICT 2026",
-        subject: `New Keynote Speaker: ${created.name}`,
-        html: await sendKeynoteSpeakerRegistrationEmail(created),
+        subject: `New Keynote Speaker: ${newKeynoteSpeaker.name}`,
+        html: await sendKeynoteSpeakerRegistrationEmail(newKeynoteSpeaker),
       },
       "normal"
     );
