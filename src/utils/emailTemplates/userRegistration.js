@@ -243,7 +243,7 @@ export const speakerConfirmationTemplate = (speakerData) => `
         <h3>📅 Important Dates</h3>
         <ul>
           <li><strong>Conference Dates:</strong> January 22-23, 2026</li>
-          <li><strong>Paper Review Deadline:</strong> Within 10 business days after submission</li>
+          <li><strong>Paper Review Deadline:</strong> December 05, 2025</li>
           <li><strong>Final Paper Submission:</strong> December 15, 2025</li>
           <li><strong>Registration Deadline:</strong> December 25, 2025</li>
         </ul>
@@ -310,7 +310,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>📄 New Speaker Registration</h1>
+      <h1>📄 New Paper Submission</h1>
       <p>ICCICT 2026 Conference</p>
     </div>
     
