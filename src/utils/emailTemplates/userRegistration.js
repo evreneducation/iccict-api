@@ -310,7 +310,7 @@ export const speakerAdminNotificationTemplate = (speakerData) => `
 <body>
   <div class="container">
     <div class="header">
-      <h1>📄 New Paper Submission</h1>
+      <h1>📄 New Paper Submission from ${speakerData.name}</h1>
       <p>ICCICT 2026 Conference</p>
     </div>
     
