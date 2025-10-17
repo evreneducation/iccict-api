@@ -119,7 +119,7 @@ export async function sendSpeakerRegistrationEmail(speakerData) {
     from: process.env.BREVO_FROM_EMAIL,
     fromName: "ICCICT 2026",
     to: process.env.ADMIN_EMAIL,
-    subject: `New Speaker Registration: ${speakerData.name}`,
+    subject: `New Paper Submission: ${speakerData.name}`,
     html: speakerAdminNotificationTemplate(speakerData),
   };
 
