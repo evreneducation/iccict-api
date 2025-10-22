@@ -35,13 +35,13 @@ export const welcomeTemplate = (userData) => `
         <p><strong>Email:</strong> ${userData.email}</p>
         <p><strong>Phone:</strong> ${userData.phone}</p>
         <p><strong>Registration Date:</strong> ${new Date().toLocaleDateString()}</p>
-        <!--<p><strong>Paper ID:</strong> ${userData.paperId || 'N/A'}</p>
+        <p><strong>Paper ID:</strong> ${userData.paperId || 'N/A'}</p>
         <p><strong>Transaction ID:</strong> ${userData.transactionId || 'N/A'}</p>
         ${
           userData.uploadPaymentReceipt
             ? `<p><strong>Payment Receipt:</strong> <a href="${userData.uploadPaymentReceipt}" target="_blank">📎 View Receipt</a></p>`
             : ''
-        }-->
+        }
       </div>
       
       <div class="info-section">
