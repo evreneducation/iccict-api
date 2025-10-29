@@ -1,6 +1,6 @@
 import { prisma } from "../config/db.js";
 import { sendSpeakerRegistrationEmail } from "../services/emailService.js";
-import cloudinary  from "../config/cloudinary.js";
+import cloudinary from "../config/cloudinary.js";
 
 const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,7 +28,7 @@ const SERIAL_PAD = 3;
 function formatPaperId(date, seq, pad = SERIAL_PAD) {
   const yy = String(date.getFullYear()).slice(-2);
   const mm = String(date.getMonth() + 1).padStart(2, "0");
-  const s  = String(seq).padStart(pad, "0");
+  const s = String(seq).padStart(pad, "0");
   return `${yy}${mm}${s}`;
 }
 
@@ -88,13 +88,13 @@ export const registerSpeaker = async (req, res) => {
     let referredById = null;
     if (referralCode) {
       const admin = await prisma.Admin.findUnique({
-        where: { referralCode }
+        where: { referralCode },
       });
 
       if (!admin) {
         return res.status(400).json({
           message: "Invalid referral code",
-          success: false
+          success: false,
         });
       }
       referredById = admin.id;
@@ -104,10 +104,23 @@ export const registerSpeaker = async (req, res) => {
     // Required fields (your logic)
     // ----------------------------
     const requiredFields = [
-      "conferenceTitle", "placeDate", "paperTitle", "paperAbstract", "keywords",
-      "name", "email", "phone", "institutionName", "country", "primarySubject",
-      "ethicsCompliance", "agreeTerms", "agreePresentation", "agreePublication",
-      "agreeReview", "agreeDataSharing"
+      "conferenceTitle",
+      "placeDate",
+      "paperTitle",
+      "paperAbstract",
+      "keywords",
+      "name",
+      "email",
+      "phone",
+      "institutionName",
+      "country",
+      "primarySubject",
+      "ethicsCompliance",
+      "agreeTerms",
+      "agreePresentation",
+      "agreePublication",
+      "agreeReview",
+      "agreeDataSharing",
     ];
 
     const missingFields = requiredFields.filter((field) => {
@@ -120,7 +133,7 @@ export const registerSpeaker = async (req, res) => {
     if (missingFields.length > 0) {
       return res.status(400).json({
         message: `Missing required fields: ${missingFields.join(", ")}`,
-        success: false
+        success: false,
       });
     }
 
@@ -128,32 +141,39 @@ export const registerSpeaker = async (req, res) => {
     // Field validations (yours)
     // ---------------------------
     if (!validateEmail(speakerData.email)) {
-      return res.status(400).json({ message: "Invalid email format", success: false });
+      return res
+        .status(400)
+        .json({ message: "Invalid email format", success: false });
     }
 
     if (!validatePhone(speakerData.phone)) {
-      return res.status(400).json({ message: "Invalid phone number format", success: false });
+      return res
+        .status(400)
+        .json({ message: "Invalid phone number format", success: false });
     }
 
     if (speakerData.orcidId && !validateOrcid(speakerData.orcidId)) {
       return res.status(400).json({
         message: "Invalid ORCID format (should be 0000-0000-0000-0000)",
-        success: false
+        success: false,
       });
     }
 
     // Abstract length (50–500 words)
-    const abstractWords = speakerData.paperAbstract.trim().split(/\s+/).filter(w => w.length > 0);
+    const abstractWords = speakerData.paperAbstract
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
     if (abstractWords.length < 50) {
       return res.status(400).json({
         message: "Abstract must be at least 50 words long",
-        success: false
+        success: false,
       });
     }
     if (abstractWords.length > 500) {
       return res.status(400).json({
         message: "Abstract must not exceed 500 words",
-        success: false
+        success: false,
       });
     }
 
@@ -161,14 +181,18 @@ export const registerSpeaker = async (req, res) => {
     if (speakerData.preprintPolicy === "true" && !speakerData.preprintUrl) {
       return res.status(400).json({
         message: "Preprint URL is required when preprint policy is selected",
-        success: false
+        success: false,
       });
     }
 
-    if (speakerData.aiGeneratedContent === "true" && !speakerData.aiContentDescription) {
+    if (
+      speakerData.aiGeneratedContent === "true" &&
+      !speakerData.aiContentDescription
+    ) {
       return res.status(400).json({
-        message: "AI content description is required when AI-generated content is selected",
-        success: false
+        message:
+          "AI content description is required when AI-generated content is selected",
+        success: false,
       });
     }
 
@@ -176,34 +200,48 @@ export const registerSpeaker = async (req, res) => {
     // Co-authors JSON validation
     // -----------------------------
     let coAuthors = [];
-    if (speakerData.coAuthors.length > 0) {
+    const rawCoAuthors = speakerData.coAuthors;
+
+    if (
+      rawCoAuthors &&
+      (Array.isArray(rawCoAuthors) ||
+        (typeof rawCoAuthors === "string" && rawCoAuthors.trim().length > 0))
+    ) {
       try {
-        coAuthors = JSON.parse(speakerData.coAuthors);
+        coAuthors = Array.isArray(rawCoAuthors)
+          ? rawCoAuthors
+          : JSON.parse(rawCoAuthors);
+
         for (let i = 0; i < coAuthors.length; i++) {
           const coAuthor = coAuthors[i];
-          if (!coAuthor.name || !coAuthor.email || !coAuthor.institution || !coAuthor.country) {
+          if (
+            !coAuthor.name ||
+            !coAuthor.email ||
+            !coAuthor.institution ||
+            !coAuthor.country
+          ) {
             return res.status(400).json({
               message: `Co-author ${i + 1} is missing required fields`,
-              success: false
+              success: false,
             });
           }
           if (!validateEmail(coAuthor.email)) {
             return res.status(400).json({
               message: `Invalid email format for co-author ${i + 1}`,
-              success: false
+              success: false,
             });
           }
           if (coAuthor.orcidId && !validateOrcid(coAuthor.orcidId)) {
             return res.status(400).json({
               message: `Invalid ORCID format for co-author ${i + 1}`,
-              success: false
+              success: false,
             });
           }
         }
       } catch (error) {
         return res.status(400).json({
           message: "Invalid co-authors data format",
-          success: false
+          success: false,
         });
       }
     }
@@ -212,12 +250,12 @@ export const registerSpeaker = async (req, res) => {
     // Unique email (your existing check)
     // -------------------------------------
     const existingSpeaker = await prisma.speaker.findUnique({
-      where: { email: speakerData.email }
+      where: { email: speakerData.email },
     });
     if (existingSpeaker) {
       return res.status(400).json({
         message: "Speaker already registered with this email",
-        success: false
+        success: false,
       });
     }
 
@@ -252,7 +290,10 @@ export const registerSpeaker = async (req, res) => {
 
       // Subject Areas
       primarySubject: speakerData.primarySubject,
-      additionalSubjects: speakerData.additionalSubjects.length > 0 ? JSON.stringify(speakerData.additionalSubjects) : null,
+      additionalSubjects:
+        speakerData.additionalSubjects.length > 0
+          ? JSON.stringify(speakerData.additionalSubjects)
+          : null,
 
       // File Uploads
       paperFileUrl,
@@ -290,7 +331,7 @@ export const registerSpeaker = async (req, res) => {
 
       // Legacy
       attendeeType: "presenter",
-      fileUrl: paperFileUrl
+      fileUrl: paperFileUrl,
     };
 
     // --------------------------------------------------------
@@ -313,7 +354,10 @@ export const registerSpeaker = async (req, res) => {
         break; // success
       } catch (e) {
         // On unique violation for paperId, bump serial and retry
-        if (e.code === "P2002" && String(e?.meta?.target || "").includes("paperId")) {
+        if (
+          e.code === "P2002" &&
+          String(e?.meta?.target || "").includes("paperId")
+        ) {
           serial += 1;
           continue;
         }
@@ -338,8 +382,8 @@ export const registerSpeaker = async (req, res) => {
           name: speakerData.name,
           email: speakerData.email,
           referredBy: referralCode,
-          adminId: referredById
-        }
+          adminId: referredById,
+        },
       });
     }
 
@@ -363,25 +407,29 @@ export const registerSpeaker = async (req, res) => {
     // Prisma error handling (yours)
     if (error.code === "P2000") {
       return res.status(400).json({
-        message: "One or more fields contain data that is too long. Please check your input and try again.",
+        message:
+          "One or more fields contain data that is too long. Please check your input and try again.",
         success: false,
       });
     }
     if (error.code === "P2002") {
       return res.status(400).json({
-        message: "A submission with this email address already exists. Please use a different email or contact support.",
+        message:
+          "A submission with this email address already exists. Please use a different email or contact support.",
         success: false,
       });
     }
     if (error.code === "P2003") {
       return res.status(400).json({
-        message: "Invalid reference data. Please check your form and try again.",
+        message:
+          "Invalid reference data. Please check your form and try again.",
         success: false,
       });
     }
 
     res.status(500).json({
-      message: "Error submitting paper. Please try again later or contact support if the problem persists.",
+      message:
+        "Error submitting paper. Please try again later or contact support if the problem persists.",
       error: error.message,
       success: false,
     });
@@ -415,11 +463,11 @@ export const getSpeakers = async (req, res) => {
         orderBy: { createdAt: "desc" },
         include: {
           referredBy: {
-            select: { id: true, email: true, referralCode: true }
-          }
-        }
+            select: { id: true, email: true, referralCode: true },
+          },
+        },
       }),
-      prisma.speaker.count({ where })
+      prisma.speaker.count({ where }),
     ]);
 
     res.status(200).json({
@@ -427,7 +475,7 @@ export const getSpeakers = async (req, res) => {
       total,
       page: parseInt(page),
       totalPages: Math.ceil(total / parseInt(limit)),
-      success: true
+      success: true,
     });
   } catch (error) {
     console.error("Error retrieving speakers:", error);
@@ -439,11 +487,10 @@ export const getSpeakers = async (req, res) => {
   }
 };
 
-
 export const getSpeakerById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const speaker = await prisma.speaker.findUnique({
       where: { id },
       include: {
@@ -451,22 +498,22 @@ export const getSpeakerById = async (req, res) => {
           select: {
             id: true,
             email: true,
-            referralCode: true
-          }
-        }
-      }
+            referralCode: true,
+          },
+        },
+      },
     });
 
     if (!speaker) {
       return res.status(404).json({
         message: "Speaker not found",
-        success: false
+        success: false,
       });
     }
 
     res.status(200).json({ speaker, success: true });
   } catch (error) {
-    console.error('Error retrieving speaker:', error);
+    console.error("Error retrieving speaker:", error);
     res.status(500).json({
       message: "Error retrieving speaker",
       error: error.message,
@@ -481,13 +528,13 @@ export const updateSpeakerStatus = async (req, res) => {
     const { reviewStatus, sentToCommittee, committeeMembers } = req.body;
 
     const speaker = await prisma.speaker.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!speaker) {
       return res.status(404).json({
         message: "Speaker not found",
-        success: false
+        success: false,
       });
     }
 
@@ -495,18 +542,21 @@ export const updateSpeakerStatus = async (req, res) => {
       where: { id },
       data: {
         reviewStatus: reviewStatus || speaker.reviewStatus,
-        sentToCommittee: sentToCommittee !== undefined ? sentToCommittee : speaker.sentToCommittee,
-        committeeMembers: committeeMembers || speaker.committeeMembers
-      }
+        sentToCommittee:
+          sentToCommittee !== undefined
+            ? sentToCommittee
+            : speaker.sentToCommittee,
+        committeeMembers: committeeMembers || speaker.committeeMembers,
+      },
     });
 
     res.status(200).json({
       message: "Speaker status updated successfully",
       speaker: updatedSpeaker,
-      success: true
+      success: true,
     });
   } catch (error) {
-    console.error('Error updating speaker status:', error);
+    console.error("Error updating speaker status:", error);
     res.status(500).json({
       message: "Error updating speaker status",
       error: error.message,
@@ -518,28 +568,28 @@ export const updateSpeakerStatus = async (req, res) => {
 export const deleteSpeaker = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const speaker = await prisma.speaker.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!speaker) {
       return res.status(404).json({
         message: "Speaker not found",
-        success: false
+        success: false,
       });
     }
 
     await prisma.speaker.delete({
-      where: { id }
+      where: { id },
     });
 
     res.status(200).json({
       message: "Speaker deleted successfully",
-      success: true
+      success: true,
     });
   } catch (error) {
-    console.error('Error deleting speaker:', error);
+    console.error("Error deleting speaker:", error);
     res.status(500).json({
       message: "Error deleting speaker",
       error: error.message,
@@ -557,15 +607,15 @@ export const getSpeakerStats = async (req, res) => {
       approved,
       rejected,
       needsRevision,
-      sentToCommittee
+      sentToCommittee,
     ] = await Promise.all([
       prisma.speaker.count(),
-      prisma.speaker.count({ where: { reviewStatus: 'PENDING' } }),
-      prisma.speaker.count({ where: { reviewStatus: 'UNDER_REVIEW' } }),
-      prisma.speaker.count({ where: { reviewStatus: 'APPROVED' } }),
-      prisma.speaker.count({ where: { reviewStatus: 'REJECTED' } }),
-      prisma.speaker.count({ where: { reviewStatus: 'NEEDS_REVISION' } }),
-      prisma.speaker.count({ where: { sentToCommittee: true } })
+      prisma.speaker.count({ where: { reviewStatus: "PENDING" } }),
+      prisma.speaker.count({ where: { reviewStatus: "UNDER_REVIEW" } }),
+      prisma.speaker.count({ where: { reviewStatus: "APPROVED" } }),
+      prisma.speaker.count({ where: { reviewStatus: "REJECTED" } }),
+      prisma.speaker.count({ where: { reviewStatus: "NEEDS_REVISION" } }),
+      prisma.speaker.count({ where: { sentToCommittee: true } }),
     ]);
 
     res.status(200).json({
@@ -576,12 +626,12 @@ export const getSpeakerStats = async (req, res) => {
         approved,
         rejected,
         needsRevision,
-        sentToCommittee
+        sentToCommittee,
       },
-      success: true
+      success: true,
     });
   } catch (error) {
-    console.error('Error retrieving speaker stats:', error);
+    console.error("Error retrieving speaker stats:", error);
     res.status(500).json({
       message: "Error retrieving speaker statistics",
       error: error.message,
@@ -590,18 +640,24 @@ export const getSpeakerStats = async (req, res) => {
   }
 };
 
-
 export const uploadTurnitinReport = async (req, res) => {
   try {
     const { id } = req.params;
 
     const speaker = await prisma.speaker.findUnique({ where: { id } });
     if (!speaker) {
-      return res.status(404).json({ message: "Speaker not found", success: false });
+      return res
+        .status(404)
+        .json({ message: "Speaker not found", success: false });
     }
 
-    if (!req.file && !(req.files && req.files.turnitinReport && req.files.turnitinReport[0])) {
-      return res.status(400).json({ message: "No report file uploaded", success: false });
+    if (
+      !req.file &&
+      !(req.files && req.files.turnitinReport && req.files.turnitinReport[0])
+    ) {
+      return res
+        .status(400)
+        .json({ message: "No report file uploaded", success: false });
     }
 
     // Cloudinary multer gives you .path
@@ -610,20 +666,20 @@ export const uploadTurnitinReport = async (req, res) => {
 
     const updated = await prisma.speaker.update({
       where: { id },
-      data: { turnitinReportUrl: url }
+      data: { turnitinReportUrl: url },
     });
 
     return res.status(200).json({
       message: "Turnitin report uploaded successfully",
       speaker: updated,
-      success: true
+      success: true,
     });
   } catch (err) {
     console.error("Error uploading Turnitin report:", err);
     return res.status(500).json({
       message: "Failed to upload Turnitin report",
       error: err.message,
-      success: false
+      success: false,
     });
   }
 };
@@ -659,11 +715,15 @@ export const deleteTurnitinReport = async (req, res) => {
 
     const speaker = await prisma.speaker.findUnique({ where: { id } });
     if (!speaker) {
-      return res.status(404).json({ message: "Speaker not found", success: false });
+      return res
+        .status(404)
+        .json({ message: "Speaker not found", success: false });
     }
 
     if (!speaker.turnitinReportUrl) {
-      return res.status(400).json({ message: "No Turnitin report on record", success: false });
+      return res
+        .status(400)
+        .json({ message: "No Turnitin report on record", success: false });
     }
 
     const info = extractCloudinaryPublicId(speaker.turnitinReportUrl);
@@ -683,10 +743,15 @@ export const deleteTurnitinReport = async (req, res) => {
         });
       } catch (err) {
         // Don’t block DB cleanup if the file is already gone
-        console.error("[TurnitinDelete] Cloudinary destroy failed:", err?.message);
+        console.error(
+          "[TurnitinDelete] Cloudinary destroy failed:",
+          err?.message
+        );
       }
     } else {
-      console.warn("[TurnitinDelete] Could not parse Cloudinary public_id from URL; skipping remote delete");
+      console.warn(
+        "[TurnitinDelete] Could not parse Cloudinary public_id from URL; skipping remote delete"
+      );
     }
 
     // Clear the URL in DB
