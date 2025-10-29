@@ -1190,6 +1190,10 @@ const reviewerExpressionAcceptedTemplate = (reviewerData) => `
             <div class="value">${reviewerData.institution}</div>
           </div>
           <div>
+            <div class="label">Role:</div>
+            <div class="value">${reviewerData.rolePreference}</div>
+          </div>
+          <div>
             <div class="label">Expertise Areas:</div>
             <div class="value">${Array.isArray(reviewerData.subjectArea) ? reviewerData.subjectArea.join(', ') : reviewerData.subjectArea}</div>
           </div>
@@ -1307,6 +1311,10 @@ const reviewerExpressionRejectedTemplate = (reviewerData) => `
             <div class="value">${reviewerData.institution}</div>
           </div>
           <div>
+            <div class="label">Role:</div>
+            <div class="value">${reviewerData.rolePreference}</div>
+          </div>
+          <div>
             <div class="label">Status:</div>
             <div class="value" style="color: #dc3545; font-weight: bold;">NOT SELECTED</div>
           </div>
@@ -1394,6 +1402,10 @@ const reviewerExpressionAdminNotificationTemplate = (reviewerData) => `
           <div>
             <div class="label">Current Job Title:</div>
             <div class="value">${reviewerData.currentJobTitle}</div>
+          </div>
+          <div>
+            <div class="label">Institution:</div>
+            <div class="value">${reviewerData.institution}</div>
           </div>
           <div>
             <div class="label">Institution:</div>

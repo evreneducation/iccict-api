@@ -296,6 +296,11 @@ enum ReviewerStatus {
   REJECTED
 }
 
+enum RolePreference {
+  Reviewer
+  SessionChair
+}
+
 model ReviewerExpression {
   id                           String          @id @default(uuid())
   name                         String
@@ -315,6 +320,9 @@ model ReviewerExpression {
 
   cvUrl                        String?
   status                       ReviewerStatus  @default(PENDING)
+
+  // NEW
+  rolePreference               RolePreference  @default(Reviewer)
 
   createdAt                    DateTime        @default(now())
   updatedAt                    DateTime        @updatedAt

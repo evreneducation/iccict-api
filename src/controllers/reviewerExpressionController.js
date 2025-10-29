@@ -84,6 +84,7 @@ export const createReviewerExpression = async (req, res) => {
       previousPeerReviewExperience,
       conflictOfInterest,
       cvUrl, // Now expecting URL instead of file
+      rolePreference,
     } = req.body;
 
     if (!name || !currentJobTitle || !institution) {
@@ -105,6 +106,25 @@ export const createReviewerExpression = async (req, res) => {
       });
     }
 
+    // normalize role
+    function normalizeRolePreference(v) {
+      if (!v) return "Reviewer";
+      const s = String(v).trim().toLowerCase();
+      if (s === "reviewer") return "Reviewer";
+      if (s === "session chair" || s === "sessionchair") return "SessionChair";
+      return "Reviewer";
+    }
+    const role = normalizeRolePreference(rolePreference);
+
+    // optional: validate
+    const VALID_ROLES = ["Reviewer", "SessionChair"];
+    if (!VALID_ROLES.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid rolePreference. Valid: Reviewer, Session Chair",
+      });
+    }
+
     const payload = {
       name,
       email,
@@ -119,6 +139,7 @@ export const createReviewerExpression = async (req, res) => {
       conflictOfInterest: conflictOfInterest || null,
       cvUrl: cvUrl || null, // Now using URL directly
       status: "PENDING",
+      rolePreference: role,
     };
 
     const created = await prisma.ReviewerExpression.create({ data: payload });
@@ -220,12 +241,10 @@ export const updateReviewerExpressionStatus = async (req, res) => {
 
     const adminId = req.admin?.id; // set by requireSuperAdmin
     if (status === "ACCEPTED" && !adminId) {
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "Admin context missing (createdBy required)",
-        });
+      return res.status(500).json({
+        success: false,
+        message: "Admin context missing (createdBy required)",
+      });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -236,8 +255,9 @@ export const updateReviewerExpressionStatus = async (req, res) => {
       });
 
       // 2) If ACCEPTED, upsert into ReviewingCommittee using email as unique key
+      const isReviewer = (existing.rolePreference || "Reviewer") === "Reviewer";
       let committee = null;
-      if (status === "ACCEPTED") {
+      if (status === "ACCEPTED" && isReviewer) {
         const email = (existing.email || "").trim();
         if (email) {
           committee = await tx.reviewingCommittee.upsert({
