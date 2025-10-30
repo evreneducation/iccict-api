@@ -2,6 +2,7 @@ import { prisma } from "../config/db.js";
 import {
   sendReviewerExpressionStatusEmail,
   sendReviewerExpressionAdminNotification,
+  reviewerExpressionAdminNotificationTemplate,
 } from "../services/emailService.js";
 import emailQueue from "../services/emailQueue.js";
 import logger from "../config/logger.js";
@@ -152,14 +153,26 @@ export const createReviewerExpression = async (req, res) => {
       processingTime: `${processingTime}ms`,
     });
 
-    // Queue admin notification email (non-blocking)
+    // Queue user confirmation (non-blocking)
     await emailQueue.addEmail(
       {
         to: created.email,
         from: process.env.BREVO_FROM_EMAIL,
         fromName: "ICCICT 2026",
+        subject: "ICCICT 2026 | Reviewer Application Received",
+        html: reviewerExpressionSubmissionTemplate(created),
+      },
+      "normal"
+    );
+
+    // Queue admin notification (non-blocking)
+    await emailQueue.addEmail(
+      {
+        to: process.env.ADMIN_EMAIL,
+        from: process.env.BREVO_FROM_EMAIL,
+        fromName: "ICCICT 2026",
         subject: `New Reviewer Expression: ${created.name}`,
-        html: await sendReviewerExpressionAdminNotification(created),
+        html: reviewerExpressionAdminNotificationTemplate(created),
       },
       "normal"
     );

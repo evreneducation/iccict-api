@@ -1356,7 +1356,7 @@ const reviewerExpressionRejectedTemplate = (reviewerData) => `
 `;
 
 // Email template for admin notification of new reviewer expression
-const reviewerExpressionAdminNotificationTemplate = (reviewerData) => `
+export const reviewerExpressionAdminNotificationTemplate = (reviewerData) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -1460,6 +1460,61 @@ const reviewerExpressionAdminNotificationTemplate = (reviewerData) => `
         <p><strong>⚡ Action Required:</strong> Please review this reviewer application and update the status accordingly.</p>
         <p style="color: #666; font-size: 14px;">Application ID: ${reviewerData.id}</p>
       </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+// Email template for reviewer expression submission
+export const reviewerExpressionSubmissionTemplate = (reviewerData) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ICCICT 2026 | Reviewer Application Received</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#f2f4f6; color:#333; }
+    .wrap { max-width:700px; margin:0 auto; padding:16px; }
+    .card { background:#ffffff; border-radius:10px; overflow:hidden; }
+    .hdr { padding:28px 24px; background:linear-gradient(135deg,#019087,#40c4ba); color:#fff; }
+    .hdr h1 { margin:0; font-size:20px; }
+    .sec { padding:22px 24px; border-top:1px solid #eef2f4; }
+    .k { color:#019087; font-weight:bold; width:40%; }
+    .row { display:flex; gap:12px; padding:6px 0; }
+    .footer { color:#666; font-size:12px; text-align:center; padding:16px 0; }
+    .pill { display:inline-block; background:#e8f5f3; color:#019087; padding:6px 10px; border-radius:16px; font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="hdr">
+        <h1>Reviewer Application Received</h1>
+        <p style="margin:6px 0 0 0; opacity:.95;">ICCICT 2026 • International Conference on AI, ML, IoT & Computer Science</p>
+      </div>
+      <div class="sec">
+        <p>Dear ${reviewerData.name || "Applicant"},</p>
+        <p>Thank you for submitting your interest to serve as a ${reviewerData.rolePreference || "Reviewer"} for ICCICT 2026.</p>
+        <p class="pill">Status: PENDING REVIEW</p>
+        <p>Our committee will review your application and get back to you via email. You will also receive an update if your application is accepted or rejected.</p>
+      </div>
+      <div class="sec">
+        <h3 style="margin:0 0 8px 0;">Your Details</h3>
+        <div class="row"><div class="k">Name</div><div>${reviewerData.name || "-"}</div></div>
+        <div class="row"><div class="k">Email</div><div>${reviewerData.email || "-"}</div></div>
+        <div class="row"><div class="k">Current Role</div><div>${reviewerData.currentJobTitle || "-"}</div></div>
+        <div class="row"><div class="k">Institution</div><div>${reviewerData.institution || "-"}</div></div>
+        ${Array.isArray(reviewerData.subjectArea) && reviewerData.subjectArea.length
+          ? `<div class="row"><div class="k">Subject Areas</div><div>${reviewerData.subjectArea.join(", ")}</div></div>` : ""}
+        ${reviewerData.cvUrl ? `<div class="row"><div class="k">CV</div><div><a href="${reviewerData.cvUrl}" target="_blank">Download</a></div></div>` : ""}
+      </div>
+      <div class="sec">
+        <p>If you have questions, contact us at <a href="mailto:${process.env.ADMIN_EMAIL}">${process.env.ADMIN_EMAIL}</a>.</p>
+      </div>
+    </div>
+    <div class="footer">
+      This is an automated message from the ICCICT Conference Management System.
     </div>
   </div>
 </body>
