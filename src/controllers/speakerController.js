@@ -217,7 +217,7 @@ export const registerSpeaker = async (req, res) => {
           if (
             !coAuthor.name ||
             !coAuthor.email ||
-            !coAuthor.institution ||
+            !coAuthor.institutionName ||
             !coAuthor.country
           ) {
             return res.status(400).json({
