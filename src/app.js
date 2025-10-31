@@ -22,6 +22,9 @@ import { startKeepWarmJob } from './jobs/keepWarmJob.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Same folder as logger.js resolves: <project-root>/logs
+export const LOGS_DIR = path.resolve(__dirname, '../logs');
+
 dotenv.config();
 
 const app = express();
@@ -56,6 +59,8 @@ app.options('*', (req, res) => {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+app.use('/logs', express.static(LOGS_DIR));
 
 // Request logging middleware
 app.use((req, res, next) => {
