@@ -189,12 +189,37 @@ export const registerUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const registeredUsers = await prisma.registerUser.findMany();
-    res.status(200).json(registeredUsers);
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || '25', 10), 1), 100);
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      prisma.registerUser.findMany({
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        // select: {
+        //   id: true,
+        //   name: true,
+        //   email: true,
+        //   paperId: true,
+        //   transactionId: true,
+        //   isPaid: true,
+        //   createdAt: true,
+        // },
+      }),
+      prisma.registerUser.count(),
+    ]);
+
+    res.status(200).json({
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      items,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error retrieving users", error: error.message });
+    res.status(500).json({ message: "Error retrieving users", error: error.message });
   }
 };
 

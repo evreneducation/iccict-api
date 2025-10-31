@@ -17,6 +17,7 @@ import fileUploadRoutes from './routes/fileUploadRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import { startReviewReminderJob } from './jobs/reviewReminderJob.js';
 import logger from './config/logger.js';
+import { startKeepWarmJob } from './jobs/keepWarmJob.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,6 +84,10 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ ok: true, ts: Date.now() });
+});
+
 // Routes
 app.use('/api/conference', conferenceRegistrationRoutes);
 app.use('/api/sponsor', sponsorRegistrationRoutes);
@@ -129,9 +134,16 @@ process.on('SIGINT', async () => {
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`, {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version
-    });
+  logger.info(`Server is running on port ${PORT}`, {
+    port: PORT,
+    environment: process.env.NODE_ENV || "development",
+    nodeVersion: process.version,
+  });
+
+  // start background jobs AFTER server is up
+  try {
+    startKeepWarmJob();
+  } catch (e) {
+    logger.warn("Failed to start keep-warm job", { error: e.message });
+  }
 });

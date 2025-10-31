@@ -254,6 +254,13 @@ export const registerKeynoteSpeaker = async (req, res) => {
       processingTime: `${processingTime}ms`,
     });
 
+    res.status(201).json({
+      message: "Keynote speaker registered successfully",
+      speaker: newKeynoteSpeaker,
+      success: true,
+    });
+
+    
     // Queue confirmation email (non-blocking)
     await emailQueue.addEmail(
       {
@@ -265,12 +272,6 @@ export const registerKeynoteSpeaker = async (req, res) => {
       },
       "normal"
     );
-
-    res.status(201).json({
-      message: "Keynote speaker registered successfully",
-      speaker: newKeynoteSpeaker,
-      success: true,
-    });
   } catch (error) {
     logger.error("Keynote speaker registration error", {
       error: error.message,

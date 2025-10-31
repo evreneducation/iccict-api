@@ -65,22 +65,32 @@ export const getAllAdmins = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    const admins = await prisma.Admin.findMany({
-      where: {
-        role: 'ADMIN'
-      },
-      include: {
-        referredUsers: {
-          select: {
-            name: true,
-            email: true,
-            createdAt: true,
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || '25', 10), 1), 100);
+    const skip = (page - 1) * pageSize;
+
+    const [admins, total] = await Promise.all([
+      prisma.Admin.findMany({
+        where: { role: 'ADMIN' },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          referralCode: true,
+          createdAt: true,
+          referredUsers: {
+            select: { name: true, email: true, createdAt: true },
+            take: 5,
+            orderBy: { createdAt: 'desc' }
           }
         },
-      },
-    });
+      }),
+      prisma.Admin.count({ where: { role: 'ADMIN' } }),
+    ]);
 
-    res.json(admins);
+    res.json({ items: admins, page, pageSize, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -173,22 +183,30 @@ export const getUsers = async (req, res) => {
   const { role, referralCode } = req.user;
 
   try {
-    let users;
-    if (role === 'SUPER_ADMIN') {
-      users = await prisma.user.findMany({
-        include: {
-          referredBy: true,
-        },
-      });
-    } else {
-      users = await prisma.user.findMany({
-        where: {
-          referredBy: referralCode,
-        },
-      });
-    }
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || '25', 10), 1), 100);
+    const skip = (page - 1) * pageSize;
 
-    res.json(users);
+    const where = role === 'SUPER_ADMIN' ? {} : { referredBy: referralCode };
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          referredBy: true,
+          createdAt: true,
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    res.json({ items: users, page, pageSize, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -261,27 +279,29 @@ export const getDashboardStats = async (req, res) => {
 // Registration Management
 export const getAllRegistrations = async (req, res) => {
   try {
-    let registrations;
-    try {
-      registrations = await prisma.registerUser.findMany({
-        include: {
-          referredBy: {
-            select: {
-              id: true,
-              email: true,
-              referralCode: true
-            }
-          }
+    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || '25', 10), 1), 100);
+    const skip = (page - 1) * pageSize;
+
+    const [items, total] = await Promise.all([
+      prisma.registerUser.findMany({
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          regFee: true,
+          isPaid: true,
+          createdAt: true,
+          referredBy: { select: { email: true, referralCode: true } },
         },
-        orderBy: { createdAt: 'desc' }
-      });
-    } catch (referralError) {
-      console.log('Referral data not available yet, fetching basic registrations');
-      registrations = await prisma.registerUser.findMany({
-        orderBy: { createdAt: 'desc' }
-      });
-    }
-    res.json(registrations);
+      }),
+      prisma.registerUser.count(),
+    ]);
+
+    res.json({ items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -292,7 +312,7 @@ export const getRegistrationById = async (req, res) => {
   try {
     const { id } = req.params;
     const registration = await prisma.registerUser.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
     
     if (!registration) {
@@ -313,7 +333,7 @@ export const updateRegistration = async (req, res) => {
     
     // Get the current registration to check if payment status is changing
     const currentRegistration = await prisma.registerUser.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
     
     if (!currentRegistration) {
@@ -322,7 +342,7 @@ export const updateRegistration = async (req, res) => {
     
     // Update the registration
     const registration = await prisma.registerUser.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: updateData
     });
     
@@ -373,7 +393,7 @@ export const deleteRegistration = async (req, res) => {
     const { id } = req.params;
     
     await prisma.registerUser.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
     
     res.json({ message: 'Registration deleted successfully' });
@@ -527,7 +547,7 @@ export const getSponsorById = async (req, res) => {
   try {
     const { id } = req.params;
     const sponsor = await prisma.sponsor.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
     
     if (!sponsor) {
@@ -547,7 +567,7 @@ export const updateSponsor = async (req, res) => {
     const updateData = req.body;
     
     const sponsor = await prisma.sponsor.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: updateData
     });
     
@@ -563,7 +583,7 @@ export const deleteSponsor = async (req, res) => {
     const { id } = req.params;
     
     await prisma.sponsor.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
     
     res.json({ message: 'Sponsor deleted successfully' });

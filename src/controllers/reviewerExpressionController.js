@@ -147,6 +147,12 @@ export const createReviewerExpression = async (req, res) => {
 
     const processingTime = Date.now() - startTime;
 
+    res.status(201).json({
+      success: true,
+      message: "Reviewer expression submitted successfully",
+      data: created,
+    });
+
     logger.info("Reviewer expression submission successful", {
       id: created.id,
       email: created.email,
@@ -176,12 +182,6 @@ export const createReviewerExpression = async (req, res) => {
       },
       "normal"
     );
-
-    res.status(201).json({
-      success: true,
-      message: "Reviewer expression submitted successfully",
-      data: created,
-    });
   } catch (error) {
     logger.error("Reviewer expression submission error", {
       error: error.message,
@@ -300,6 +300,27 @@ export const updateReviewerExpressionStatus = async (req, res) => {
       return { updated, committee };
     });
 
+    res.status(200).json({
+      success: true,
+      message: "Status updated",
+      data: result.updated,
+      syncedToCommittee: Boolean(result.committee),
+      committeeRecord: result.committee
+        ? {
+            id: result.committee.id,
+            name: result.committee.name,
+            email: result.committee.email,
+            designation: result.committee.designation,
+            institution: result.committee.institution,
+            expertise: result.committee.expertise,
+            isActive: result.committee.isActive,
+            createdBy: result.committee.createdBy,
+            createdAt: result.committee.createdAt,
+            updatedAt: result.committee.updatedAt,
+          }
+        : null,
+    });
+
     // Queue status notification email (non-blocking)
     try {
       await emailQueue.addEmail(
@@ -330,27 +351,6 @@ export const updateReviewerExpressionStatus = async (req, res) => {
       status,
       email: existing.email,
     });
-
-    return res.json({
-      success: true,
-      message: "Status updated",
-      data: result.updated,
-      syncedToCommittee: Boolean(result.committee),
-      committeeRecord: result.committee
-        ? {
-            id: result.committee.id,
-            name: result.committee.name,
-            email: result.committee.email,
-            designation: result.committee.designation,
-            institution: result.committee.institution,
-            expertise: result.committee.expertise,
-            isActive: result.committee.isActive,
-            createdBy: result.committee.createdBy,
-            createdAt: result.committee.createdAt,
-            updatedAt: result.committee.updatedAt,
-          }
-        : null,
-    });
   } catch (error) {
     logger.error("Error updating reviewer expression status", {
       error: error.message,
@@ -380,7 +380,7 @@ export const deleteReviewerExpression = async (req, res) => {
       id,
     });
 
-    return res.json({ success: true, message: "Reviewer record deleted" });
+    res.status(200).json({ success: true, message: "Reviewer record deleted" });
   } catch (error) {
     logger.error("Error deleting reviewer expression", {
       error: error.message,
@@ -399,7 +399,7 @@ export const getAllFormFilled = async (req, res) => {
     const rows = await prisma.ReviewerExpression.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return res.json({
+    res.status(200).json({
       success: true,
       total: rows.length,
       data: rows,

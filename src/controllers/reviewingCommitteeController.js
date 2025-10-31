@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/db.js';
 import { sendSpeakerToCommitteeEmail } from '../services/emailService.js';
-
-const prisma = new PrismaClient();
 
 // Get all committee members (Super Admin only)
 export const getAllCommitteeMembers = async (req, res) => {
