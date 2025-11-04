@@ -168,6 +168,23 @@ export const registerUser = async (req, res) => {
       },
     });
 
+    // Create a 'User' record for the admin's "My Referrals" page
+    if (referralCode && admin?.id) {
+      try {
+        await prisma.user.create({
+          data: {
+            name,
+            email,
+            referredBy: referralCode,
+            adminId: admin.id,
+          },
+        });
+      } catch (e) {
+        // Non-blocking; don't fail registration on referral list creation
+        console.warn("Failed to create referral user record:", e?.message || e);
+      }
+    }
+
     res.status(201).json({
       message: "User registered successfully",
       user: newRegisterUser,
@@ -189,15 +206,18 @@ export const registerUser = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page || '1', 10), 1);
-    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize || '25', 10), 1), 100);
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const pageSize = Math.min(
+      Math.max(parseInt(req.query.pageSize || "25", 10), 1),
+      100
+    );
     const skip = (page - 1) * pageSize;
 
     const [items, total] = await Promise.all([
       prisma.registerUser.findMany({
         skip,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         // select: {
         //   id: true,
         //   name: true,
@@ -219,10 +239,8 @@ export const getUsers = async (req, res) => {
       items,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving users", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error retrieving users", error: error.message });
   }
 };
-
-
-
-

@@ -238,6 +238,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
         speakerData.agreeToMarketing === "true",
 
       // Referral
+      referralCode: referralCode || null,
       referredById: referredById,
     };
 
@@ -245,6 +246,25 @@ export const registerKeynoteSpeaker = async (req, res) => {
     const newKeynoteSpeaker = await prisma.keynoteSpeaker.create({
       data: keynoteData,
     });
+
+    // add a "User" for referrals if referral was used
+    if (referralCode && referredById) {
+      try {
+        await prisma.user.create({
+          data: {
+            name: speakerData.name,
+            email: speakerData.email,
+            referredBy: referralCode,
+            adminId: referredById,
+          },
+        });
+      } catch (e) {
+        console.warn(
+          "Failed to create keynote referral user record:",
+          e?.message || e
+        );
+      }
+    }
 
     const processingTime = Date.now() - startTime;
 
@@ -260,7 +280,6 @@ export const registerKeynoteSpeaker = async (req, res) => {
       success: true,
     });
 
-    
     // Queue confirmation email (non-blocking)
     await emailQueue.addEmail(
       {
