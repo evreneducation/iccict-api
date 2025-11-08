@@ -580,8 +580,18 @@ export const deleteSpeaker = async (req, res) => {
       });
     }
 
-    await prisma.speaker.delete({
-      where: { id },
+    // Delete speaker and any referred 'User' rows in a single transaction
+    await prisma.$transaction(async (tx) => {
+      await tx.speaker.delete({ where: { id } });
+
+      // Clean up the referral mirror rows
+      await tx.user.deleteMany({
+        where: {
+          email: speaker.email,
+          adminId: speaker.referredById || undefined,
+          referredBy: speaker.referralCode || undefined,
+        },
+      });
     });
 
     res.status(200).json({

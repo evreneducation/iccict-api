@@ -244,3 +244,42 @@ export const getUsers = async (req, res) => {
       .json({ message: "Error retrieving users", error: error.message });
   }
 };
+
+export const deleteRegisterUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const reg = await prisma.registerUser.findUnique({ where: { id: Number(id) } });
+    if (!reg) {
+      return res.status(404).json({
+        message: "Registration not found",
+        success: false,
+      });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.registerUser.delete({ where: { id: Number(id) } });
+
+      // Clean up the referral mirror rows
+      await tx.user.deleteMany({
+        where: {
+          email: reg.email,
+          adminId: reg.referredById || undefined,
+          referredBy: reg.referralCode || undefined,
+        },
+      });
+    });
+
+    res.status(200).json({
+      message: "Registration deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error deleting registration:", error);
+    res.status(500).json({
+      message: "Error deleting registration",
+      error: error.message,
+      success: false,
+    });
+  }
+};

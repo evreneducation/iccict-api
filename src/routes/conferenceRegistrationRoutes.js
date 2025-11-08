@@ -6,4 +6,7 @@ const router = express.Router();
 router.post("/register", receiptUpload.single('uploadPaymentReceipt'), registerUser);
 router.get("/users", getUsers);
 
+// delete a registration
+router.delete("/users/:id", deleteRegisterUser);
+
 export default router;
