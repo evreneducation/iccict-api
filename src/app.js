@@ -146,9 +146,9 @@ app.listen(PORT, () => {
   });
 
   // start background jobs AFTER server is up
-  try {
-    startKeepWarmJob();
-  } catch (e) {
-    logger.warn("Failed to start keep-warm job", { error: e.message });
-  }
+  // try {
+  //   startKeepWarmJob();
+  // } catch (e) {
+  //   logger.warn("Failed to start keep-warm job", { error: e.message });
+  // }
 });
