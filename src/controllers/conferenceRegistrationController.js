@@ -112,9 +112,8 @@ export const registerUser = async (req, res) => {
         success: false,
       });
     }
-
     // Check if paperId already exists
-    const existingPaper = await prisma.registerUser.findUnique({
+    const existingPaper = await prisma.registerUser.findFirst({
       where: { paperId },
     });
     if (existingPaper) {
@@ -125,7 +124,7 @@ export const registerUser = async (req, res) => {
     }
 
     // Check if transactionId already exists
-    const existingTransaction = await prisma.registerUser.findUnique({
+    const existingTransaction = await prisma.registerUser.findFirst({
       where: { transactionId },
     });
     if (existingTransaction) {
@@ -249,7 +248,9 @@ export const deleteRegisterUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const reg = await prisma.registerUser.findUnique({ where: { id: Number(id) } });
+    const reg = await prisma.registerUser.findUnique({
+      where: { id: Number(id) },
+    });
     if (!reg) {
       return res.status(404).json({
         message: "Registration not found",
