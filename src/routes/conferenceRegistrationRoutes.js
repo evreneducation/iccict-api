@@ -1,5 +1,5 @@
 import express from "express";
-import { getUsers, registerUser } from "../controllers/conferenceRegistrationController.js";
+import { getUsers, registerUser, deleteRegisterUser } from "../controllers/conferenceRegistrationController.js";
 import { receiptUpload } from "../config/cloudinary.js";
 const router = express.Router();
 
