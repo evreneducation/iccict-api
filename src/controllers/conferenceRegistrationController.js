@@ -123,6 +123,17 @@ export const registerUser = async (req, res) => {
       });
     }
 
+    //check if email already exist or not
+    const isExistingEmail = await prisma.registerUser.findUnique({
+      where: { email },
+    });
+    if (isExistingEmail) {
+      return res.status(400).json({
+        message: `Email already exists`,
+        success: false,
+      });
+    }
+
     // Check if transactionId already exists
     const existingTransaction = await prisma.registerUser.findFirst({
       where: { email, transactionId },
