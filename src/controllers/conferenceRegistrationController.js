@@ -114,7 +114,7 @@ export const registerUser = async (req, res) => {
     }
     // Check if paperId already exists
     const existingPaper = await prisma.registerUser.findFirst({
-      where: { paperId },
+      where: { email, paperId },
     });
     if (existingPaper) {
       return res.status(400).json({
@@ -125,7 +125,7 @@ export const registerUser = async (req, res) => {
 
     // Check if transactionId already exists
     const existingTransaction = await prisma.registerUser.findFirst({
-      where: { transactionId },
+      where: { email, transactionId },
     });
     if (existingTransaction) {
       return res.status(400).json({
