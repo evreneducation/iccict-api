@@ -317,7 +317,8 @@ export const getRegistrationById = async (req, res) => {
   try {
     const { id } = req.params;
     const registration = await prisma.registerUser.findUnique({
-      where: { id }
+      where: { id },
+      orderBy: {createdAt: 'desc'},
     });
     
     if (!registration) {
@@ -398,7 +399,7 @@ export const deleteRegistration = async (req, res) => {
     const { id } = req.params;
     
     await prisma.registerUser.delete({
-      where: { id }
+      where: { id: Number(id) }
     });
     
     res.json({ message: 'Registration deleted successfully' });
