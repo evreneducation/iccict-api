@@ -61,6 +61,6 @@ export const sendEmail = async (emailData) => {
     console.log("Brevo API configured successfully");
   } catch (error) {
     console.error("Brevo API configuration error:", error.message);
-    process.exit(1);
+    // process.exit(1);
   }
 })();

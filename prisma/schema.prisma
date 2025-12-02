@@ -8,9 +8,14 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// datasource db {
+//   provider = "mysql"
+//   url      = env("MYSQL_URI")
+// }
+
 datasource db {
-  provider = "mysql"
-  url      = env("MYSQL_URI")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum ConferenceJoiningMode {

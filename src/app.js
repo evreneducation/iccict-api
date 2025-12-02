@@ -82,8 +82,8 @@ app.use((req, res, next) => {
 });
 
 // Connect to database
-connectDB();
-startReviewReminderJob();
+// connectDB();
+// startReviewReminderJob();
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
@@ -138,12 +138,29 @@ process.on('SIGINT', async () => {
 
 // Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`Server is running on port ${PORT}`, {
     port: PORT,
     environment: process.env.NODE_ENV || "development",
     nodeVersion: process.version,
   });
+
+  // Connect DB with retries, but do not crash app
+  const dbOk = await connectDB();
+  if (!dbOk) {
+    logger.warn("Continuing to run without a DB connection; health endpoint will respond");
+  }
+
+  // Start background jobs only if DB is okay
+  try {
+    if (dbOk) {
+      startReviewReminderJob();
+    } else {
+      logger.warn("ReviewReminderJob not started because DB is offline");
+    }
+  } catch (e) {
+    logger.warn("Failed to start ReviewReminderJob", { error: e.message });
+  }
 
   // start background jobs AFTER server is up
   // try {
