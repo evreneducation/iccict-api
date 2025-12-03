@@ -24,7 +24,6 @@ export const registerKeynoteSpeaker = async (req, res) => {
     });
 
     const speakerData = req.body;
-    const { referralCode } = speakerData;
 
     // Validate required fields
     const requiredFields = [
@@ -152,21 +151,21 @@ export const registerKeynoteSpeaker = async (req, res) => {
     }
 
     // If referral code is provided, verify it exists
+    const rawReferral =
+      typeof speakerData.referralCode === "string"
+        ? speakerData.referralCode.trim()
+        : "";
+    const referralCode =
+      rawReferral &&
+      rawReferral.toLowerCase() !== "null" &&
+      rawReferral.toLowerCase() !== "undefined"
+        ? rawReferral
+        : "";
+
     let referredById = null;
-    if (referralCode) {
-      const admin = await prisma.Admin.findUnique({
-        where: { referralCode },
-      });
-
+    if (referralCode.length > 0) {
+      const admin = await prisma.Admin.findUnique({ where: { referralCode } });
       if (!admin) {
-        logger.warn(
-          "Keynote speaker registration failed - invalid referral code",
-          {
-            referralCode,
-            email: speakerData.email,
-          }
-        );
-
         return res.status(400).json({
           message: "Invalid referral code",
           success: false,

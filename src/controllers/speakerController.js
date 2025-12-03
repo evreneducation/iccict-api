@@ -60,7 +60,6 @@ async function getNextGlobalSerial() {
 export const registerSpeaker = async (req, res) => {
   try {
     const speakerData = req.body;
-    const { referralCode } = speakerData;
 
     // --------------------------
     // Handle file uploads (yours)
@@ -85,8 +84,19 @@ export const registerSpeaker = async (req, res) => {
     // ---------------------------------
     // Referral code → find Admin (yours)
     // ---------------------------------
+    const rawReferral =
+      typeof speakerData.referralCode === "string"
+        ? speakerData.referralCode.trim()
+        : "";
+    const referralCode =
+      rawReferral &&
+      rawReferral.toLowerCase() !== "null" &&
+      rawReferral.toLowerCase() !== "undefined"
+        ? rawReferral
+        : "";
+
     let referredById = null;
-    if (referralCode) {
+    if (referralCode.length > 0) {
       const admin = await prisma.Admin.findUnique({
         where: { referralCode },
       });

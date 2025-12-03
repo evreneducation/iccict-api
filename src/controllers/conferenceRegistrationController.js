@@ -65,7 +65,6 @@ export const registerUser = async (req, res) => {
     earlyBird,
     regFee,
     isPaid,
-    referralCode,
     paperId,
     transactionId,
     conferenceJoiningMode,
@@ -146,8 +145,19 @@ export const registerUser = async (req, res) => {
     }
 
     // If referral code provided, validate admin
+    const rawReferral =
+      typeof registerUserData.referralCode === "string"
+        ? registerUserData.referralCode.trim()
+        : "";
+    const referralCode =
+      rawReferral &&
+      rawReferral.toLowerCase() !== "null" &&
+      rawReferral.toLowerCase() !== "undefined"
+        ? rawReferral
+        : "";
+
     let admin = null;
-    if (referralCode) {
+    if (referralCode.length > 0) {
       admin = await prisma.Admin.findUnique({ where: { referralCode } });
       if (!admin) {
         return res.status(400).json({
