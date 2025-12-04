@@ -2,12 +2,16 @@ import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Create logs directory if it doesn't exist
-const logDir = path.join(__dirname, '../../logs');
+const logDir = path.join(__dirname, '../../public/logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
 
 // Custom format for console output
 const consoleFormat = winston.format.combine(
@@ -38,7 +42,7 @@ const logger = winston.createLogger({
     // Error log file
     new DailyRotateFile({
       filename: path.join(logDir, 'error-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
+      datePattern: 'MM-YYYY',
       level: 'error',
       maxSize: '20m',
       maxFiles: '30d',
@@ -47,7 +51,7 @@ const logger = winston.createLogger({
     // Combined log file
     new DailyRotateFile({
       filename: path.join(logDir, 'app-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
+      datePattern: 'MM-YYYY',
       maxSize: '20m',
       maxFiles: '12m', // Keep 12 months of logs
       zippedArchive: true

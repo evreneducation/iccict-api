@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Same folder as logger.js resolves: <project-root>/logs
-export const LOGS_DIR = path.resolve(__dirname, '../logs');
+export const LOGS_DIR = path.resolve(__dirname, '../public/logs');
 
 dotenv.config();
 
@@ -60,8 +60,6 @@ app.options('*', (req, res) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-app.use('/logs', express.static(LOGS_DIR));
-
 // Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
@@ -81,12 +79,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// Connect to database
-// connectDB();
-// startReviewReminderJob();
+// Public Files
+app.use('/public/logs', express.static(LOGS_DIR));
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
+});
+
+app.get('/public/logs/download/:name', (req, res) => {
+  const filePath = path.join(LOGS_DIR, req.params.name);
+  if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+  res.download(filePath);
 });
 
 app.get("/health", (req, res) => {
