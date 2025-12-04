@@ -1,37 +1,8 @@
-// import { PrismaClient } from "@prisma/client";
-// import logger from "./logger.js";
-
-// // Enhanced Prisma client with connection pooling and retry logic
-// const prisma = new PrismaClient({
-//   log: [
-//     { level: "query", emit: "event" },
-//     { level: "error", emit: "event" },
-//     { level: "info", emit: "event" },
-//     { level: "warn", emit: "event" },
-//   ],
-//   datasources: {
-//     db: {
-//       url: process.env.MYSQL_URI,
-//     },
-//   },
-// });
-
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pkg from "pg";
 import logger from "./logger.js";
 
-const { Pool } = pkg;
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  // optional: ssl: { rejectUnauthorized: false },
-});
-
-const adapter = new PrismaPg(pool);
-
+// Simple Prisma client using DATABASE_URL from .env
 const prisma = new PrismaClient({
-  adapter,
   log: [
     { level: "query", emit: "event" },
     { level: "error", emit: "event" },
@@ -74,32 +45,17 @@ prisma.$on("warn", (e) => {
   });
 });
 
-// Connection pool configuration
-// const connectDB = async () => {
-//   try {
-//     await prisma.$connect();
-//     logger.info("Database connected successfully");
-
-//     // Test the connection
-//     await prisma.$queryRaw`SELECT 1`;
-//     logger.info("Database connection test successful");
-
-//     return true;
-//   } catch (error) {
-//     logger.error("Database connection failed", {
-//       error: error.message,
-//       stack: error.stack
-//     });
-//     process.exit(1);
-//   }
-// };
+// Connection with retry logic
 const connectDB = async (retries = 5, delayMs = 5000) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await prisma.$connect();
       logger.info("Database connected successfully");
+
+      // Test the connection (works with MySQL too)
       await prisma.$queryRaw`SELECT 1`;
       logger.info("Database connection test successful");
+
       return true;
     } catch (error) {
       logger.error("Database connection failed", {
@@ -130,7 +86,7 @@ const disconnectDB = async () => {
   }
 };
 
-// Health check function
+// Health check
 const checkDatabaseHealth = async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
