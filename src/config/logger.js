@@ -44,7 +44,6 @@ const logger = winston.createLogger({
       filename: path.join(logDir, 'error-%DATE%.log'),
       datePattern: 'MM-YYYY',
       level: 'error',
-      maxSize: '20m',
       maxFiles: '30d',
       zippedArchive: true
     }),
@@ -52,7 +51,6 @@ const logger = winston.createLogger({
     new DailyRotateFile({
       filename: path.join(logDir, 'app-%DATE%.log'),
       datePattern: 'MM-YYYY',
-      maxSize: '20m',
       maxFiles: '12m', // Keep 12 months of logs
       zippedArchive: true
     })
@@ -60,11 +58,11 @@ const logger = winston.createLogger({
 });
 
 // Add console transport for development
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: consoleFormat
-  }));
-}
+// if (process.env.NODE_ENV !== 'production') {
+//   logger.add(new winston.transports.Console({
+//     format: consoleFormat
+//   }));
+// }
 
 // Create a stream for Morgan HTTP logging
 logger.stream = {

@@ -18,6 +18,7 @@ import healthRoutes from './routes/healthRoutes.js';
 import { startReviewReminderJob } from './jobs/reviewReminderJob.js';
 import logger from './config/logger.js';
 import { startKeepWarmJob } from './jobs/keepWarmJob.js';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
