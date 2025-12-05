@@ -49,7 +49,7 @@ async function getNextGlobalSerial() {
     return maxSerial + 1;
   } catch (err) {
     // Fallback if raw query not available
-    const c = await prisma.speaker.count({ where: { paperId: { not: null } } });
+    const c = await prisma.speaker.count();
     return c + 1;
   }
 }
