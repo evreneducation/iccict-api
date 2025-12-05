@@ -29,7 +29,7 @@ function formatPaperId(date, seq, pad = SERIAL_PAD) {
   const yy = String(date.getFullYear()).slice(-2);
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const s = String(seq).padStart(pad, "0");
-  return `111_${yy}${mm}${s}`;
+  return `${yy}${mm}${s}`;
 }
 
 /**
