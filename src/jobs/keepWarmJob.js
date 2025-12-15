@@ -21,13 +21,13 @@ export function startKeepWarmJob() {
   // toggle via env
   const enabled = String(process.env.KEEP_WARM_ENABLED || "true").toLowerCase() === "true";
   if (!enabled) {
-    logger.info("[keep-warm] disabled via KEEP_WARM_ENABLED=false");
+    console.log("[keep-warm] disabled via KEEP_WARM_ENABLED=false");
     return;
   }
 
   const url = resolveHealthUrl();
   if (!url) {
-    logger.warn("[keep-warm] no base URL found (set KEEP_WARM_URL or ensure RENDER_EXTERNAL_URL)");
+    console.log("[keep-warm] no base URL found (set KEEP_WARM_URL or ensure RENDER_EXTERNAL_URL)");
     return;
   }
 
@@ -44,13 +44,13 @@ export function startKeepWarmJob() {
         timeout: 8000,
         headers: { "User-Agent": "ICCICT-KeepWarm/1.0" },
       });
-      logger.info("[keep-warm] ping ok", {
+      console.log("[keep-warm] ping ok", {
         url,
         status: res.status,
         durationMs: Date.now() - started,
       });
     } catch (err) {
-      logger.warn("[keep-warm] ping failed", {
+      console.log("[keep-warm] ping failed", {
         url,
         error: err?.message || String(err),
       });
@@ -61,5 +61,5 @@ export function startKeepWarmJob() {
   setTimeout(tick, 60 * 1000);
   setInterval(tick, CHECK_EVERY_MIN * 60 * 1000);
 
-  logger.info("[keep-warm] scheduled", { url, everyMin: CHECK_EVERY_MIN });
+  console.log("[keep-warm] scheduled", { url, everyMin: CHECK_EVERY_MIN });
 }

@@ -67,7 +67,7 @@ export const createReviewerExpression = async (req, res) => {
   const startTime = Date.now();
 
   try {
-    logger.info("Reviewer expression submission started", {
+    console.log("Reviewer expression submission started", {
       ip: req.ip,
       userAgent: req.get("User-Agent"),
     });
@@ -89,7 +89,7 @@ export const createReviewerExpression = async (req, res) => {
     } = req.body;
 
     if (!name || !currentJobTitle || !institution) {
-      logger.warn(
+      console.log(
         "Reviewer expression submission failed - missing required fields",
         {
           missingFields: {
@@ -153,7 +153,7 @@ export const createReviewerExpression = async (req, res) => {
       data: created,
     });
 
-    logger.info("Reviewer expression submission successful", {
+    console.log("Reviewer expression submission successful", {
       id: created.id,
       email: created.email,
       processingTime: `${processingTime}ms`,
@@ -183,7 +183,7 @@ export const createReviewerExpression = async (req, res) => {
       "normal"
     );
   } catch (error) {
-    logger.error("Reviewer expression submission error", {
+    console.log("Reviewer expression submission error", {
       error: error.message,
       email: req.body?.email,
       stack: error.stack,
@@ -209,7 +209,7 @@ export const getReviewerExpressionById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Not found" });
     return res.json({ success: true, data: row });
   } catch (error) {
-    logger.error("Error retrieving reviewer expression by ID", {
+    console.log("Error retrieving reviewer expression by ID", {
       error: error.message,
       id: req.params.id,
     });
@@ -334,25 +334,25 @@ export const updateReviewerExpressionStatus = async (req, res) => {
         "normal"
       );
 
-      logger.info("Reviewer expression status notification queued", {
+      console.log("Reviewer expression status notification queued", {
         email: existing.email,
         status,
       });
     } catch (emailError) {
-      logger.error("Failed to queue reviewer expression status notification", {
+      console.log("Failed to queue reviewer expression status notification", {
         error: emailError.message,
         email: existing.email,
         status,
       });
     }
 
-    logger.info("Reviewer expression status updated", {
+    console.log("Reviewer expression status updated", {
       id,
       status,
       email: existing.email,
     });
   } catch (error) {
-    logger.error("Error updating reviewer expression status", {
+    console.log("Error updating reviewer expression status", {
       error: error.message,
       id: req.params.id,
       status: req.body.status,
@@ -376,13 +376,13 @@ export const deleteReviewerExpression = async (req, res) => {
     const { id } = req.params;
     await prisma.ReviewerExpression.delete({ where: { id } });
 
-    logger.info("Reviewer expression deleted", {
+    console.log("Reviewer expression deleted", {
       id,
     });
 
     res.status(200).json({ success: true, message: "Reviewer record deleted" });
   } catch (error) {
-    logger.error("Error deleting reviewer expression", {
+    console.log("Error deleting reviewer expression", {
       error: error.message,
       id: req.params.id,
     });
@@ -405,7 +405,7 @@ export const getAllFormFilled = async (req, res) => {
       data: rows,
     });
   } catch (error) {
-    logger.error("Error retrieving all reviewer expressions", {
+    console.log("Error retrieving all reviewer expressions", {
       error: error.message,
       stack: error.stack,
     });

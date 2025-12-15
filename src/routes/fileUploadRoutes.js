@@ -59,7 +59,7 @@ router.post(
         });
       }
     } catch (error) {
-      logger.error("Keynote file upload error", {
+      console.log("Keynote file upload error", {
         error: error.message,
         fileType: req.params.fileType,
       });
@@ -123,7 +123,7 @@ router.post(
         });
       }
     } catch (error) {
-      logger.error("Reviewer CV upload error", {
+      console.log("Reviewer CV upload error", {
         error: error.message,
       });
 
@@ -187,7 +187,7 @@ router.post(
         });
       }
     } catch (error) {
-      logger.error("Speaker file upload error", {
+      console.log("Speaker file upload error", {
         error: error.message,
         fileType: req.params.fileType,
       });
@@ -252,7 +252,7 @@ router.post(
         });
       }
     } catch (error) {
-      logger.error("Sponsor file upload error", {
+      console.log("Sponsor file upload error", {
         error: error.message,
         fileType: req.params.fileType,
       });
@@ -321,7 +321,7 @@ router.post(
         });
       }
     } catch (error) {
-      logger.error("File upload error", {
+      console.log("File upload error", {
         error: error.message,
         type: req.params.type,
         fileType: req.params.fileType,

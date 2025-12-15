@@ -65,7 +65,7 @@ router.get('/detailed', async (req, res) => {
     
     const statusCode = healthStatus.status === 'healthy' ? 200 : 503;
     
-    logger.info('Health check performed', {
+    console.log('Health check performed', {
       status: healthStatus.status,
       responseTime,
       dbStatus: dbHealth.status
@@ -74,7 +74,7 @@ router.get('/detailed', async (req, res) => {
     res.status(statusCode).json(healthStatus);
     
   } catch (error) {
-    logger.error('Health check failed', {
+    console.error('Health check failed', {
       error: error.message,
       stack: error.stack
     });

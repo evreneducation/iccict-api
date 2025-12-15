@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    logger.info('HTTP Request', {
+    console.log('HTTP Request', {
       method: req.method,
       url: req.url,
       status: res.statusCode,
@@ -112,7 +112,7 @@ app.use('/api/health', healthRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  logger.error('Unhandled error', {
+  console.log('Unhandled error', {
     error: err.message,
     stack: err.stack,
     url: req.url,
@@ -129,13 +129,13 @@ app.use((err, req, res, next) => {
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+  console.log('SIGTERM received, shutting down gracefully');
   await disconnectDB();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully');
+  console.log('SIGINT received, shutting down gracefully');
   await disconnectDB();
   process.exit(0);
 });
@@ -143,7 +143,7 @@ process.on('SIGINT', async () => {
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, async () => {
-  logger.info(`Server is running on port ${PORT}`, {
+  console.log(`Server is running on port ${PORT}`, {
     port: PORT,
     environment: process.env.NODE_ENV || "development",
     nodeVersion: process.version,
@@ -152,7 +152,7 @@ app.listen(PORT, async () => {
   // Connect DB with retries, but do not crash app
   const dbOk = await connectDB();
   if (!dbOk) {
-    logger.warn("Continuing to run without a DB connection; health endpoint will respond");
+    console.log("Continuing to run without a DB connection; health endpoint will respond");
   }
 
   // Start background jobs only if DB is okay
@@ -160,16 +160,16 @@ app.listen(PORT, async () => {
     if (dbOk) {
       startReviewReminderJob();
     } else {
-      logger.warn("ReviewReminderJob not started because DB is offline");
+      console.log("ReviewReminderJob not started because DB is offline");
     }
   } catch (e) {
-    logger.warn("Failed to start ReviewReminderJob", { error: e.message });
+    console.log("Failed to start ReviewReminderJob", { error: e.message });
   }
 
   // start background jobs AFTER server is up
   // try {
   //   startKeepWarmJob();
   // } catch (e) {
-  //   logger.warn("Failed to start keep-warm job", { error: e.message });
+  //   console.log("Failed to start keep-warm job", { error: e.message });
   // }
 });

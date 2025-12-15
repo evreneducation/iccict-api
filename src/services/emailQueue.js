@@ -21,7 +21,7 @@ class EmailQueue {
     };
 
     this.queue.push(emailJob);
-    logger.info('Email added to queue', {
+    console.log('Email added to queue', {
       emailId: emailJob.id,
       to: emailData.to,
       priority
@@ -42,7 +42,7 @@ class EmailQueue {
     }
 
     this.processing = true;
-    logger.info('Starting email queue processing', {
+    console.log('Starting email queue processing', {
       queueLength: this.queue.length
     });
 
@@ -58,7 +58,7 @@ class EmailQueue {
     }
 
     this.processing = false;
-    logger.info('Email queue processing completed');
+    console.log('Email queue processing completed');
   }
 
   // Process individual email job
@@ -67,7 +67,7 @@ class EmailQueue {
       job.status = 'processing';
       job.attempts++;
 
-      logger.info('Processing email job', {
+      console.log('Processing email job', {
         emailId: job.id,
         attempt: job.attempts,
         to: job.data.to
@@ -78,14 +78,14 @@ class EmailQueue {
       await sendEmail(job.data);
 
       job.status = 'completed';
-      logger.info('Email sent successfully', {
+      console.log('Email sent successfully', {
         emailId: job.id,
         to: job.data.to
       });
 
     } catch (error) {
       job.status = 'failed';
-      logger.error('Email sending failed', {
+      console.log('Email sending failed', {
         emailId: job.id,
         attempt: job.attempts,
         error: error.message,
@@ -105,13 +105,13 @@ class EmailQueue {
           }
         }, this.retryDelay * job.attempts);
 
-        logger.info('Email job scheduled for retry', {
+        console.log('Email job scheduled for retry', {
           emailId: job.id,
           retryAt: job.retryAt,
           nextAttempt: job.attempts + 1
         });
       } else {
-        logger.error('Email job failed permanently', {
+        console.log('Email job failed permanently', {
           emailId: job.id,
           totalAttempts: job.attempts,
           to: job.data.to
@@ -138,7 +138,7 @@ class EmailQueue {
     const removed = initialLength - this.queue.length;
     
     if (removed > 0) {
-      logger.info('Cleared completed email jobs', { removed });
+      console.log('Cleared completed email jobs', { removed });
     }
   }
 }

@@ -107,7 +107,7 @@ export const uploadToCloudinary = async (file, type, subfolder = "") => {
 
     const folder = subfolder ? `${config.folder}/${subfolder}` : config.folder;
 
-    logger.info("Starting file upload to Cloudinary", {
+    console.log("Starting file upload to Cloudinary", {
       type,
       subfolder,
       originalName: file.originalname,
@@ -162,7 +162,7 @@ export const uploadToCloudinary = async (file, type, subfolder = "") => {
       downloadUrl = result.secure_url;
     }
 
-    logger.info("File uploaded successfully to Cloudinary", {
+    console.log("File uploaded successfully to Cloudinary", {
       type,
       publicId: result.public_id,
       url: result.secure_url,
@@ -181,7 +181,7 @@ export const uploadToCloudinary = async (file, type, subfolder = "") => {
       extension: normalizedExt === '.pdf' ? "" : normalizedExt.replace(".", "") || null, // e.g., 'docx', 'zip'
     };
   } catch (error) {
-    logger.error("File upload failed", {
+    console.log("File upload failed", {
       type,
       error: error.message,
       originalName: file.originalname,
@@ -199,7 +199,7 @@ export const deleteFromCloudinary = async (publicId) => {
   try {
     const result = await cloudinary.uploader.destroy(publicId);
 
-    logger.info("File deleted from Cloudinary", {
+    console.log("File deleted from Cloudinary", {
       publicId,
       result: result.result,
     });
@@ -209,7 +209,7 @@ export const deleteFromCloudinary = async (publicId) => {
       result: result.result,
     };
   } catch (error) {
-    logger.error("File deletion failed", {
+    console.log("File deletion failed", {
       publicId,
       error: error.message,
     });
@@ -229,7 +229,7 @@ export const validateFile = (file, type) => {
   }
 
   if (!config.allowedTypes.includes(file.mimetype)) {
-    logger.warn(`Upload mimetype for ${type}: ${file.mimetype}`);
+    console.log(`Upload mimetype for ${type}: ${file.mimetype}`);
     return {
       valid: false,
       error: `Invalid file type. Allowed types: ${config.allowedTypes.join(

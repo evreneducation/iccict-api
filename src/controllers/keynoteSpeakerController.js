@@ -18,7 +18,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
   const startTime = Date.now();
 
   try {
-    logger.info("Keynote speaker registration started", {
+    console.log("Keynote speaker registration started", {
       ip: req.ip,
       userAgent: req.get("User-Agent"),
     });
@@ -44,7 +44,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
     const missingFields = requiredFields.filter((field) => !speakerData[field]);
 
     if (missingFields.length > 0) {
-      logger.warn("Keynote speaker registration failed - missing fields", {
+      console.log("Keynote speaker registration failed - missing fields", {
         missingFields,
         email: speakerData.email,
       });
@@ -57,7 +57,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     // Validate email format
     if (!validateEmail(speakerData.email)) {
-      logger.warn("Keynote speaker registration failed - invalid email", {
+      console.log("Keynote speaker registration failed - invalid email", {
         email: speakerData.email,
       });
 
@@ -69,7 +69,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     // Validate phone format
     if (!validatePhone(speakerData.phone)) {
-      logger.warn("Keynote speaker registration failed - invalid phone", {
+      console.log("Keynote speaker registration failed - invalid phone", {
         phone: speakerData.phone,
         email: speakerData.email,
       });
@@ -85,7 +85,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
       speakerData.keynoteAbstract.length < 100 ||
       speakerData.keynoteAbstract.length > 500
     ) {
-      logger.warn("Keynote speaker registration failed - Invalid Abstract", {
+      console.log("Keynote speaker registration failed - Invalid Abstract", {
         abstractLength: speakerData.keynoteAbstract.length,
         email: speakerData.email,
       });
@@ -100,7 +100,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
     // Validate experience years
     const experienceYears = parseInt(speakerData.experienceYears);
     if (isNaN(experienceYears) || experienceYears < 0) {
-      logger.warn(
+      console.log(
         "Keynote speaker registration failed - invalid experience years",
         {
           experienceYears: speakerData.experienceYears,
@@ -120,7 +120,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
     });
 
     if (existingKeynoteSpeaker) {
-      logger.warn(
+      console.log(
         "Keynote speaker registration failed - email already exists",
         {
           email: speakerData.email,
@@ -140,7 +140,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
       speakerData.agreeToTerms === true ||
       speakerData.agreeToTerms === "true";
     if (!agreed) {
-      logger.warn("Keynote speaker registration failed - terms not agreed", {
+      console.log("Keynote speaker registration failed - terms not agreed", {
         email: speakerData.email,
       });
 
@@ -267,7 +267,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
 
     const processingTime = Date.now() - startTime;
 
-    logger.info("Keynote speaker registration successful", {
+    console.log("Keynote speaker registration successful", {
       id: newKeynoteSpeaker.id,
       email: newKeynoteSpeaker.email,
       processingTime: `${processingTime}ms`,
@@ -291,7 +291,7 @@ export const registerKeynoteSpeaker = async (req, res) => {
       "normal"
     );
   } catch (error) {
-    logger.error("Keynote speaker registration error", {
+    console.log("Keynote speaker registration error", {
       error: error.message,
       stack: error.stack,
     });
@@ -329,7 +329,7 @@ export const getKeynoteSpeakers = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    logger.error("Error retrieving keynote speakers", {
+    console.log("Error retrieving keynote speakers", {
       error: error.message,
       stack: error.stack,
     });
@@ -370,7 +370,7 @@ export const getKeynoteSpeakerById = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    logger.error("Error retrieving keynote speaker", {
+    console.log("Error retrieving keynote speaker", {
       error: error.message,
       id: req.params.id,
     });
@@ -414,7 +414,7 @@ export const updateKeynoteSpeakerStatus = async (req, res) => {
       },
     });
 
-    logger.info("Keynote speaker status updated", {
+    console.log("Keynote speaker status updated", {
       id,
       status,
       email: updatedKeynoteSpeaker.email,
@@ -426,7 +426,7 @@ export const updateKeynoteSpeakerStatus = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    logger.error("Error updating keynote speaker status", {
+    console.log("Error updating keynote speaker status", {
       error: error.message,
       id: req.params.id,
       status: req.body.status,
@@ -498,7 +498,7 @@ export const getAllKeynoteSpeakersForAdmin = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    logger.error("Error retrieving keynote speakers for admin", {
+    console.log("Error retrieving keynote speakers for admin", {
       error: error.message,
       stack: error.stack,
     });
@@ -589,7 +589,7 @@ export const updateKeynoteSpeakerByAdmin = async (req, res) => {
       },
     });
 
-    logger.info("Keynote speaker updated by admin", {
+    console.log("Keynote speaker updated by admin", {
       id,
       email: updatedKeynoteSpeaker.email,
     });
@@ -607,7 +607,7 @@ export const updateKeynoteSpeakerByAdmin = async (req, res) => {
       });
     }
 
-    logger.error("Error updating keynote speaker", {
+    console.log("Error updating keynote speaker", {
       error: error.message,
       id: req.params.id,
     });
@@ -634,7 +634,7 @@ export const deleteKeynoteSpeaker = async (req, res) => {
       },
     });
 
-    logger.info("Keynote speaker deleted", {
+    console.log("Keynote speaker deleted", {
       id,
       email: deletedKeynoteSpeaker.email,
     });
@@ -652,7 +652,7 @@ export const deleteKeynoteSpeaker = async (req, res) => {
       });
     }
 
-    logger.error("Error deleting keynote speaker", {
+    console.log("Error deleting keynote speaker", {
       error: error.message,
       id: req.params.id,
     });
@@ -687,7 +687,7 @@ export const getKeynoteSpeakerStatsForAdmin = async (req, res) => {
       success: true,
     });
   } catch (error) {
-    logger.error("Error retrieving keynote speaker stats", {
+    console.log("Error retrieving keynote speaker stats", {
       error: error.message,
       stack: error.stack,
     });

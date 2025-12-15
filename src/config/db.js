@@ -13,7 +13,7 @@ const prisma = new PrismaClient({
 
 // Log Prisma events
 prisma.$on("query", (e) => {
-  logger.debug("Prisma Query", {
+  console.log("Prisma Query", {
     query: e.query,
     params: e.params,
     duration: e.duration,
@@ -22,7 +22,7 @@ prisma.$on("query", (e) => {
 });
 
 prisma.$on("error", (e) => {
-  logger.error("Prisma Error", {
+  console.log("Prisma Error", {
     message: e.message,
     target: e.target,
     timestamp: e.timestamp,
@@ -30,7 +30,7 @@ prisma.$on("error", (e) => {
 });
 
 prisma.$on("info", (e) => {
-  logger.info("Prisma Info", {
+  console.log("Prisma Info", {
     message: e.message,
     target: e.target,
     timestamp: e.timestamp,
@@ -38,7 +38,7 @@ prisma.$on("info", (e) => {
 });
 
 prisma.$on("warn", (e) => {
-  logger.warn("Prisma Warning", {
+  console.log("Prisma Warning", {
     message: e.message,
     target: e.target,
     timestamp: e.timestamp,
@@ -50,15 +50,15 @@ const connectDB = async (retries = 5, delayMs = 5000) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await prisma.$connect();
-      logger.info("Database connected successfully");
+      console.log("Database connected successfully");
 
       // Test the connection (works with MySQL too)
       await prisma.$queryRaw`SELECT 1`;
-      logger.info("Database connection test successful");
+      console.log("Database connection test successful");
 
       return true;
     } catch (error) {
-      logger.error("Database connection failed", {
+      console.log("Database connection failed", {
         attempt,
         retries,
         error: error.message,
@@ -78,9 +78,9 @@ const connectDB = async (retries = 5, delayMs = 5000) => {
 const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
-    logger.info("Database disconnected successfully");
+    console.log("Database disconnected successfully");
   } catch (error) {
-    logger.error("Error disconnecting from database", {
+    console.log("Error disconnecting from database", {
       error: error.message,
     });
   }
@@ -92,7 +92,7 @@ const checkDatabaseHealth = async () => {
     await prisma.$queryRaw`SELECT 1`;
     return { status: "healthy", timestamp: new Date().toISOString() };
   } catch (error) {
-    logger.error("Database health check failed", {
+    console.log("Database health check failed", {
       error: error.message,
     });
     return {
