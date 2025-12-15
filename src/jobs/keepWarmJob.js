@@ -8,7 +8,7 @@ function resolveHealthUrl() {
     process.env.KEEP_WARM_URL ||
     process.env.RENDER_EXTERNAL_URL ||
     process.env.PUBLIC_BASE_URL ||
-    "https://iccict-api.onrender.com";
+    "https://private.compareunlistedshares.com/icmmcs-backen";
 
   if (!base) return null;
 
